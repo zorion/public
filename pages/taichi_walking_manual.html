@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tai Chi Walking — Manual Ilustrado</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Cinzel:wght@400;600&family=Noto+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1410;
+    --paper: #f5f0e8;
+    --bamboo: #6b8c5a;
+    --bamboo-light: #a8c49a;
+    --mist: #8fa8a0;
+    --gold: #b8860b;
+    --gold-light: #d4a843;
+    --rust: #8b3a2a;
+    --cloud: #dde8e5;
+    --shadow: rgba(26,20,16,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(107,140,90,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 80%, rgba(143,168,160,0.08) 0%, transparent 50%);
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(107,140,90,0.25);
+  }
+
+  .header-decoration {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(107,140,90,0.06) 59px, rgba(107,140,90,0.06) 60px),
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(107,140,90,0.06) 59px, rgba(107,140,90,0.06) 60px);
+    pointer-events: none;
+  }
+
+  .chinese-char {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: var(--bamboo);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-family: 'Noto Serif', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--mist);
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+
+  .header-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .header-divider span {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--bamboo), transparent);
+  }
+
+  .divider-symbol {
+    color: var(--gold);
+    font-size: 20px;
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--bamboo);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: 'Noto Serif', serif;
+    font-size: clamp(22px, 3.5vw, 32px);
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 32px;
+    position: relative;
+    padding-bottom: 16px;
+  }
+
+  h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 48px; height: 2px;
+    background: var(--bamboo);
+  }
+
+  h3 {
+    font-family: 'Noto Serif', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  /* STEP CARDS */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 32px;
+    margin-bottom: 64px;
+  }
+
+  .step-card {
+    background: white;
+    border: 1px solid rgba(107,140,90,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: 0 2px 20px var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .step-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px var(--shadow);
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(107,140,90,0.12);
+  }
+
+  .step-number {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    color: var(--bamboo-light);
+    line-height: 1;
+    font-weight: 600;
+  }
+
+  .step-label {
+    flex: 1;
+  }
+
+  .step-tag {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--mist);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .step-label h3 { margin-bottom: 0; font-size: 16px; }
+
+  .step-illustration {
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    background: linear-gradient(135deg, #f9f6f0, #f0ece2);
+    border-bottom: 1px solid rgba(107,140,90,0.1);
+  }
+
+  .step-body {
+    padding: 20px 24px 24px;
+  }
+
+  .step-body p {
+    font-size: 14px;
+    color: #3a3530;
+    margin-bottom: 12px;
+    line-height: 1.75;
+  }
+
+  .key-points {
+    list-style: none;
+    margin-top: 12px;
+  }
+
+  .key-points li {
+    font-size: 13px;
+    color: #4a4540;
+    padding: 5px 0 5px 20px;
+    position: relative;
+    border-bottom: 1px solid rgba(107,140,90,0.08);
+  }
+
+  .key-points li:last-child { border-bottom: none; }
+
+  .key-points li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--bamboo);
+    font-size: 12px;
+  }
+
+  /* SVG ILLUSTRATIONS */
+  svg { max-width: 100%; }
+
+  /* ERRORS TABLE */
+  .errors-section {
+    margin-bottom: 64px;
+  }
+
+  .errors-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 20px var(--shadow);
+    border: 1px solid rgba(107,140,90,0.2);
+  }
+
+  .errors-table thead tr {
+    background: var(--bamboo);
+    color: white;
+  }
+
+  .errors-table th {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 400;
+  }
+
+  .errors-table tbody tr {
+    border-bottom: 1px solid rgba(107,140,90,0.12);
+    transition: background 0.2s;
+  }
+
+  .errors-table tbody tr:hover { background: rgba(107,140,90,0.04); }
+  .errors-table tbody tr:last-child { border-bottom: none; }
+
+  .errors-table td {
+    padding: 18px 20px;
+    font-size: 13.5px;
+    vertical-align: top;
+    line-height: 1.65;
+  }
+
+  .error-name {
+    font-family: 'Noto Serif', serif;
+    font-weight: 400;
+    color: var(--rust);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+
+  .error-cause {
+    color: #6a6058;
+    font-size: 12.5px;
+  }
+
+  .correction-text {
+    color: #3a5a3a;
+    font-size: 13px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 1px;
+    margin-bottom: 6px;
+  }
+
+  .badge-error { background: rgba(139,58,42,0.1); color: var(--rust); }
+  .badge-fix { background: rgba(107,140,90,0.15); color: var(--bamboo); }
+
+  /* TIMELINE */
+  .timeline-section { margin-bottom: 64px; }
+
+  .timeline {
+    position: relative;
+    padding-left: 0;
+  }
+
+  .timeline-track {
+    display: flex;
+    align-items: stretch;
+    background: white;
+    border: 1px solid rgba(107,140,90,0.2);
+    box-shadow: 0 2px 20px var(--shadow);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  .timeline-phase {
+    flex: 1;
+    padding: 24px 20px;
+    border-right: 1px solid rgba(107,140,90,0.12);
+    position: relative;
+  }
+
+  .timeline-phase:last-child { border-right: none; }
+
+  .phase-time {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 4px;
+    line-height: 1;
+  }
+
+  .phase-mins {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--mist);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .phase-name {
+    font-family: 'Noto Serif', serif;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+
+  .phase-desc {
+    font-size: 12px;
+    color: #6a6058;
+    line-height: 1.6;
+  }
+
+  .phase-color {
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+
+  .c1 { background: var(--bamboo-light); }
+  .c2 { background: var(--bamboo); }
+  .c3 { background: var(--gold); }
+  .c4 { background: var(--mist); }
+
+  .progress-bar-container {
+    background: white;
+    border: 1px solid rgba(107,140,90,0.2);
+    border-radius: 2px;
+    padding: 24px;
+    box-shadow: 0 2px 20px var(--shadow);
+  }
+
+  .progress-bar-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .pb-text { font-size: 12px; color: var(--mist); letter-spacing: 0.1em; }
+
+  .progress-bar {
+    height: 8px;
+    background: rgba(107,140,90,0.1);
+    border-radius: 0;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .pb-segment {
+    height: 100%;
+    transition: all 0.3s;
+  }
+
+  .pb-s1 { background: var(--bamboo-light); flex: 3; }
+  .pb-s2 { background: var(--bamboo); flex: 4; }
+  .pb-s3 { background: var(--gold); flex: 5; }
+  .pb-s4 { background: var(--mist); flex: 3; }
+
+  /* BREATHING SECTION */
+  .breathing-card {
+    background: white;
+    border: 1px solid rgba(107,140,90,0.2);
+    box-shadow: 0 2px 20px var(--shadow);
+    padding: 32px;
+    margin-bottom: 64px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+
+  @media (max-width: 640px) {
+    .steps-grid { grid-template-columns: 1fr; }
+    .breathing-card { grid-template-columns: 1fr; }
+    .timeline-track { flex-direction: column; }
+    .timeline-phase { border-right: none; border-bottom: 1px solid rgba(107,140,90,0.12); }
+    .errors-table { font-size: 12px; }
+    .errors-table td, .errors-table th { padding: 12px; }
+  }
+
+  /* TIPS BOX */
+  .tips-box {
+    background: linear-gradient(135deg, rgba(107,140,90,0.08), rgba(143,168,160,0.08));
+    border-left: 3px solid var(--bamboo);
+    padding: 20px 24px;
+    margin-top: 24px;
+    font-family: 'Noto Serif', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #3a5040;
+    line-height: 1.75;
+  }
+
+  .tips-box strong {
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--bamboo);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+    font-family: 'Noto Sans', sans-serif;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px 24px;
+    border-top: 1px solid rgba(107,140,90,0.2);
+    font-size: 12px;
+    color: var(--mist);
+    letter-spacing: 0.1em;
+  }
+
+  /* SECTION SPACER */
+  .section { margin-bottom: 64px; }
+
+  /* ANIMATION */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-card, .breathing-card, .errors-table, .timeline-track, .progress-bar-container {
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .step-card:nth-child(2) { animation-delay: 0.1s; }
+  .step-card:nth-child(3) { animation-delay: 0.15s; }
+  .step-card:nth-child(4) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-decoration"></div>
+  <div class="chinese-char">太极走路 · Manual de Práctica</div>
+  <h1>Tai Chi Walking</h1>
+  <p class="subtitle">Manual Ilustrado para Principiantes — Movimiento, Alineación & Respiración</p>
+  <div class="header-divider">
+    <span></span>
+    <span class="divider-symbol">☯</span>
+    <span></span>
+  </div>
+</header>
+
+<main>
+
+  <!-- INTRODUCCIÓN -->
+  <div class="section">
+    <div class="section-title">Fundamento</div>
+    <h2>¿Qué es el Tai Chi Walking?</h2>
+    <p style="font-family:'Noto Serif',serif; font-size:15px; color:#3a3530; line-height:1.85; max-width:720px; margin-bottom:20px;">
+      El Tai Chi Walking (Caminata de Tai Chi) es la práctica fundamental de locomoción consciente dentro de las tradiciones del Tai Chi Chuan. A diferencia de caminar ordinario, cada paso integra postura, respiración, enraizamiento y conciencia del Dantian — el centro energético ubicado tres dedos por debajo del ombligo.
+    </p>
+    <div class="tips-box">
+      <strong>Principio esencial</strong>
+      "La raíz está en los pies, se desarrolla en las piernas, se dirige por la cintura y se expresa a través de los dedos." — Clásicos del Tai Chi Chuan
+    </div>
+  </div>
+
+  <!-- PASOS PRINCIPALES -->
+  <div class="section">
+    <div class="section-title">Técnica Paso a Paso</div>
+    <h2>Los Cuatro Pilares del Movimiento</h2>
+
+    <div class="steps-grid">
+
+      <!-- PASO 1: PIES -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">01</div>
+          <div class="step-label">
+            <span class="step-tag">Fundación</span>
+            <h3>Posición de los Pies — Dos Carriles</h3>
+          </div>
+        </div>
+        <div class="step-illustration">
+          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" width="300">
+            <!-- Carril izquierdo -->
+            <line x1="80" y1="10" x2="80" y2="190" stroke="#a8c49a" stroke-width="1.5" stroke-dasharray="4,4"/>
+            <!-- Carril derecho -->
+            <line x1="240" y1="10" x2="240" y2="190" stroke="#a8c49a" stroke-width="1.5" stroke-dasharray="4,4"/>
+            <!-- Etiquetas carriles -->
+            <text x="80" y="8" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#6b8c5a" letter-spacing="1">CARRIL IZQ.</text>
+            <text x="240" y="8" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#6b8c5a" letter-spacing="1">CARRIL DER.</text>
+            <!-- Eje central -->
+            <line x1="160" y1="20" x2="160" y2="185" stroke="#d4a843" stroke-width="1" stroke-dasharray="6,6" opacity="0.5"/>
+            <text x="160" y="198" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#b8860b" letter-spacing="0.5">EJE CENTRAL</text>
+
+            <!-- Pie izquierdo - posición inicial -->
+            <ellipse cx="80" cy="60" rx="22" ry="10" fill="#6b8c5a" opacity="0.25" rx="22"/>
+            <path d="M58,55 Q80,44 102,55 Q104,62 102,68 Q80,76 58,68 Z" fill="#6b8c5a" opacity="0.6"/>
+            <text x="80" y="63" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="bold">IZQ</text>
+            <!-- dedos -->
+            <circle cx="99" cy="57" r="3" fill="#4a7040" opacity="0.7"/>
+            <circle cx="100" cy="62" r="2.5" fill="#4a7040" opacity="0.6"/>
+            <circle cx="99" cy="67" r="2.5" fill="#4a7040" opacity="0.6"/>
+
+            <!-- Flecha movimiento pie izquierdo -->
+            <line x1="80" y1="80" x2="80" y2="130" stroke="#6b8c5a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+            <!-- Pie izquierdo - siguiente paso -->
+            <path d="M58,135 Q80,124 102,135 Q104,142 102,148 Q80,156 58,148 Z" fill="#6b8c5a" opacity="0.85"/>
+            <text x="80" y="143" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="bold">IZQ</text>
+            <circle cx="99" cy="137" r="3" fill="#4a7040" opacity="0.7"/>
+            <circle cx="100" cy="142" r="2.5" fill="#4a7040" opacity="0.6"/>
+            <circle cx="99" cy="147" r="2.5" fill="#4a7040" opacity="0.6"/>
+
+            <!-- Pie derecho - posición -->
+            <path d="M218,95 Q240,84 262,95 Q264,102 262,108 Q240,116 218,108 Z" fill="#8fa8a0" opacity="0.75"/>
+            <text x="240" y="103" text-anchor="middle" font-family="sans-serif" font-size="9" fill="white" font-weight="bold">DER</text>
+            <circle cx="259" cy="97" r="3" fill="#607870" opacity="0.7"/>
+            <circle cx="260" cy="102" r="2.5" fill="#607870" opacity="0.6"/>
+            <circle cx="259" cy="107" r="2.5" fill="#607870" opacity="0.6"/>
+
+            <!-- Ancho de hombros -->
+            <line x1="75" y1="170" x2="245" y2="170" stroke="#d4a843" stroke-width="1"/>
+            <line x1="75" y1="165" x2="75" y2="175" stroke="#d4a843" stroke-width="1.5"/>
+            <line x1="245" y1="165" x2="245" y2="175" stroke="#d4a843" stroke-width="1.5"/>
+            <text x="160" y="184" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#b8860b">≈ ancho de caderas</text>
+
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6" fill="none" stroke="#6b8c5a" stroke-width="1.5"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="step-body">
+          <p>Los pies avanzan sobre <strong>dos líneas paralelas</strong> — una para cada pie — separadas aproximadamente al ancho de las caderas. No camines en línea recta como en una cuerda floja.</p>
+          <ul class="key-points">
+            <li>Separación: ancho de caderas (no de hombros)</li>
+            <li>Los dedos apuntan ligeramente hacia afuera (5–10°)</li>
+            <li>El talón toca el suelo primero, suavemente</li>
+            <li>El peso rueda desde el talón hasta la almohadilla</li>
+            <li>El pie trasero empuja sin elevar el talón abruptamente</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PASO 2: SACRO -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">02</div>
+          <div class="step-label">
+            <span class="step-tag">Columna</span>
+            <h3>Alineación del Sacro — Neutro</h3>
+          </div>
+        </div>
+        <div class="step-illustration">
+          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" width="300">
+            <!-- Tres figuras: arqueado, neutro, doblado -->
+
+            <!-- INCORRECTO: arqueado -->
+            <text x="55" y="14" text-anchor="middle" font-size="9" fill="#8b3a2a" font-family="sans-serif" letter-spacing="0.5">INCORRECTO</text>
+            <!-- columna arqueada -->
+            <path d="M55,25 C45,50 60,90 55,130" stroke="#8b3a2a" stroke-width="2" fill="none" opacity="0.6"/>
+            <path d="M55,130 C52,145 58,160 55,175" stroke="#8b3a2a" stroke-width="2.5" fill="none" opacity="0.6"/>
+            <!-- pelvis inclinada -->
+            <ellipse cx="57" cy="130" rx="14" ry="8" fill="#8b3a2a" opacity="0.2" transform="rotate(20,57,130)"/>
+            <text x="55" y="192" text-anchor="middle" font-size="8.5" fill="#8b3a2a" font-family="sans-serif">Arqueado</text>
+            <path d="M40,105 L35,95" stroke="#8b3a2a" stroke-width="1" marker-end="url(#arrowR)"/>
+
+            <!-- CORRECTO: neutro -->
+            <text x="160" y="14" text-anchor="middle" font-size="9" fill="#6b8c5a" font-family="sans-serif" letter-spacing="0.5">CORRECTO</text>
+            <!-- columna neutra -->
+            <path d="M160,25 C160,50 160,90 160,130" stroke="#6b8c5a" stroke-width="2.5" fill="none"/>
+            <!-- curva natural suave -->
+            <path d="M160,130 C159,145 161,160 160,175" stroke="#6b8c5a" stroke-width="3" fill="none"/>
+            <!-- pelvis neutra -->
+            <ellipse cx="160" cy="130" rx="16" ry="9" fill="#6b8c5a" opacity="0.25"/>
+            <!-- sacro label -->
+            <line x1="178" y1="130" x2="195" y2="120" stroke="#6b8c5a" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="196" y="118" font-size="9" fill="#6b8c5a" font-family="sans-serif">SACRO</text>
+            <text x="196" y="128" font-size="8.5" fill="#6b8c5a" font-family="sans-serif">NEUTRO</text>
+            <text x="160" y="192" text-anchor="middle" font-size="8.5" fill="#6b8c5a" font-family="sans-serif">Neutro ✓</text>
+
+            <!-- INCORRECTO: basculado -->
+            <text x="270" y="14" text-anchor="middle" font-size="9" fill="#8b3a2a" font-family="sans-serif" letter-spacing="0.5">INCORRECTO</text>
+            <path d="M270,25 C278,50 262,90 270,130" stroke="#8b3a2a" stroke-width="2" fill="none" opacity="0.6"/>
+            <path d="M270,130 C270,145 270,160 270,175" stroke="#8b3a2a" stroke-width="2.5" fill="none" opacity="0.6"/>
+            <ellipse cx="268" cy="130" rx="14" ry="8" fill="#8b3a2a" opacity="0.2" transform="rotate(-20,268,130)"/>
+            <text x="270" y="192" text-anchor="middle" font-size="8.5" fill="#8b3a2a" font-family="sans-serif">Basculado</text>
+
+            <!-- Plomada vertical -->
+            <line x1="160" y1="25" x2="160" y2="175" stroke="#d4a843" stroke-width="0.75" stroke-dasharray="3,3" opacity="0.5"/>
+
+            <!-- Nuca alargada indicador -->
+            <circle cx="160" cy="22" r="5" fill="#6b8c5a" opacity="0.3"/>
+            <line x1="160" y1="10" x2="160" y2="18" stroke="#6b8c5a" stroke-width="1.5" marker-end="url(#arrowG)"/>
+            <text x="160" y="8" text-anchor="middle" font-size="8" fill="#6b8c5a" font-family="sans-serif">Nuca alargada</text>
+
+            <defs>
+              <marker id="arrowR" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L5,3 L0,6" fill="none" stroke="#8b3a2a" stroke-width="1.5"/>
+              </marker>
+              <marker id="arrowG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L5,3 L0,6" fill="none" stroke="#6b8c5a" stroke-width="1.5"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="step-body">
+          <p>El sacro en posición <strong>neutra</strong> es la llave de la columna vertebral. Ni metido hacia adentro (retroversión) ni proyectado hacia atrás (anteversión).</p>
+          <ul class="key-points">
+            <li>Imagina que la pelvis es un cuenco lleno de agua — no derramarlo</li>
+            <li>El cóccix apunta levemente hacia el suelo, no hacia atrás</li>
+            <li>La nuca se alarga suavemente hacia el cielo</li>
+            <li>"Vaciar" la zona lumbar: liberar tensión, no contraer</li>
+            <li>Los hombros caen naturalmente, sin esfuerzo</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PASO 3: RODILLAS -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">03</div>
+          <div class="step-label">
+            <span class="step-tag">Articulación</span>
+            <h3>Rodillas — Flexión Suave y Seguimiento</h3>
+          </div>
+        </div>
+        <div class="step-illustration">
+          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" width="300">
+            <!-- Pierna izquierda - fase de carga -->
+            <text x="90" y="14" text-anchor="middle" font-size="9" fill="#6b8c5a" font-family="sans-serif" letter-spacing="0.5">FASE DE CARGA</text>
+
+            <!-- muslo izquierdo -->
+            <rect x="75" y="20" width="28" height="80" rx="14" fill="#8fa8a0" opacity="0.4"/>
+            <!-- rodilla -->
+            <circle cx="89" cy="108" r="16" fill="#6b8c5a" opacity="0.25"/>
+            <circle cx="89" cy="108" r="10" fill="#6b8c5a" opacity="0.4"/>
+            <!-- tibia -->
+            <rect x="79" y="118" width="22" height="60" rx="11" fill="#8fa8a0" opacity="0.4"/>
+
+            <!-- Ángulo de flexión -->
+            <path d="M89,90 L89,108 L105,128" stroke="#d4a843" stroke-width="1.5" fill="none"/>
+            <text x="112" y="118" font-size="10" fill="#b8860b" font-family="sans-serif">~20°</text>
+            <text x="90" y="195" text-anchor="middle" font-size="9" fill="#6b8c5a" font-family="sans-serif">Flexión suave</text>
+
+            <!-- Pierna derecha - fase de balanceo -->
+            <text x="220" y="14" text-anchor="middle" font-size="9" fill="#6b8c5a" font-family="sans-serif" letter-spacing="0.5">ALINEACIÓN</text>
+
+            <!-- muslo derecho -->
+            <rect x="205" y="20" width="28" height="80" rx="14" fill="#8fa8a0" opacity="0.4"/>
+            <!-- rodilla correcta -->
+            <circle cx="219" cy="108" r="16" fill="#6b8c5a" opacity="0.25"/>
+            <circle cx="219" cy="108" r="10" fill="#6b8c5a" opacity="0.4"/>
+            <!-- tibia correcta -->
+            <rect x="209" y="118" width="22" height="60" rx="11" fill="#8fa8a0" opacity="0.4"/>
+
+            <!-- Línea de alineación rodilla-dedo -->
+            <line x1="219" y1="108" x2="228" y2="178" stroke="#d4a843" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <text x="235" y="178" font-size="9" fill="#b8860b" font-family="sans-serif">2º dedo</text>
+            <circle cx="228" cy="178" r="3" fill="#d4a843"/>
+
+            <!-- indicador "no bloquear" -->
+            <line x1="80" y1="105" x2="40" y2="90" stroke="#8b3a2a" stroke-width="1" stroke-dasharray="2,2"/>
+            <text x="35" y="85" text-anchor="end" font-size="8.5" fill="#8b3a2a" font-family="sans-serif">No bloquear</text>
+
+            <!-- flecha peso -->
+            <line x1="160" y1="60" x2="160" y2="160" stroke="#6b8c5a" stroke-width="2" marker-end="url(#arrowW)" opacity="0.4"/>
+            <text x="168" y="115" font-size="9" fill="#6b8c5a" font-family="sans-serif">Peso</text>
+
+            <defs>
+              <marker id="arrowW" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L5,3 L0,6" fill="none" stroke="#6b8c5a" stroke-width="1.5"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="step-body">
+          <p>Las rodillas permanecen <strong>siempre ligeramente flexionadas</strong> — nunca bloqueadas en extensión. Actúan como amortiguadores vivos que absorben y transmiten el peso fluidamente.</p>
+          <ul class="key-points">
+            <li>Flexión permanente: 15–25° incluso en la posición más "erguida"</li>
+            <li>La rodilla sigue siempre la dirección del segundo dedo del pie</li>
+            <li>El peso baja lentamente: no "caer" en cada paso</li>
+            <li>Evitar que la rodilla sobrepase la punta del pie al avanzar</li>
+            <li>Sensación de "flotar" sobre el suelo, no de arrastrar</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PASO 4: RESPIRACIÓN DANTIAN -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">04</div>
+          <div class="step-label">
+            <span class="step-tag">Energía</span>
+            <h3>Respiración Abdominal — Dantian</h3>
+          </div>
+        </div>
+        <div class="step-illustration">
+          <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" width="300">
+            <!-- Silueta torso frontal -->
+            <path d="M130,15 Q160,10 190,15 L195,80 Q160,90 125,80 Z" fill="#8fa8a0" opacity="0.2"/>
+
+            <!-- Abdomen -->
+            <path d="M125,80 Q160,90 195,80 L198,155 Q160,165 122,155 Z" fill="#8fa8a0" opacity="0.15"/>
+
+            <!-- Diafragma -->
+            <path d="M128,82 Q160,95 192,82" stroke="#6b8c5a" stroke-width="2" fill="none" stroke-dasharray="4,3"/>
+            <text x="200" y="87" font-size="9" fill="#6b8c5a" font-family="sans-serif">Diafragma</text>
+
+            <!-- DANTIAN - punto energético -->
+            <circle cx="160" cy="125" r="22" fill="#d4a843" opacity="0.15"/>
+            <circle cx="160" cy="125" r="14" fill="#d4a843" opacity="0.25"/>
+            <circle cx="160" cy="125" r="7" fill="#d4a843" opacity="0.5"/>
+            <!-- Label Dantian -->
+            <line x1="175" y1="125" x2="210" y2="115" stroke="#b8860b" stroke-width="1"/>
+            <text x="212" y="112" font-size="10" fill="#b8860b" font-family="sans-serif" font-weight="bold">丹田</text>
+            <text x="212" y="124" font-size="8.5" fill="#b8860b" font-family="sans-serif">Dantian</text>
+            <text x="212" y="134" font-size="8" fill="#b8860b" font-family="sans-serif">3 dedos bajo ombligo</text>
+
+            <!-- Ombligo -->
+            <circle cx="160" cy="105" r="4" fill="#8fa8a0" opacity="0.5"/>
+            <text x="140" y="102" font-size="8" fill="#8fa8a0" font-family="sans-serif" text-anchor="end">Ombligo</text>
+
+            <!-- Flechas respiración INHALAR -->
+            <text x="55" y="55" text-anchor="middle" font-size="9" fill="#6b8c5a" font-family="sans-serif" letter-spacing="0.5">INHALAR</text>
+            <text x="55" y="68" text-anchor="middle" font-size="8" fill="#6b8c5a" font-family="sans-serif">El abdomen</text>
+            <text x="55" y="79" text-anchor="middle" font-size="8" fill="#6b8c5a" font-family="sans-serif">se expande</text>
+            <path d="M80,95 Q95,125 122,125" stroke="#6b8c5a" stroke-width="1.5" fill="none" marker-end="url(#arrowIn)" stroke-dasharray="3,2"/>
+
+            <!-- Flechas respiración EXHALAR -->
+            <text x="55" y="145" text-anchor="middle" font-size="9" fill="#8b3a2a" font-family="sans-serif" letter-spacing="0.5">EXHALAR</text>
+            <text x="55" y="158" text-anchor="middle" font-size="8" fill="#8b3a2a" font-family="sans-serif">El abdomen</text>
+            <text x="55" y="169" text-anchor="middle" font-size="8" fill="#8b3a2a" font-family="sans-serif">regresa</text>
+            <path d="M122,135 Q95,145 80,158" stroke="#8b3a2a" stroke-width="1.5" fill="none" marker-end="url(#arrowOut)" stroke-dasharray="3,2"/>
+
+            <!-- Ciclo respiratorio pasos -->
+            <text x="160" y="185" text-anchor="middle" font-size="8.5" fill="#b8860b" font-family="sans-serif">Inhala (2 pasos) · Exhala (2 pasos)</text>
+
+            <defs>
+              <marker id="arrowIn" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L5,3 L0,6" fill="none" stroke="#6b8c5a" stroke-width="1.5"/>
+              </marker>
+              <marker id="arrowOut" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L5,3 L0,6" fill="none" stroke="#8b3a2a" stroke-width="1.5"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="step-body">
+          <p>La respiración abdominal activa el <strong>Dantian inferior</strong> — centro de gravedad y reserva de Chi. El movimiento del abdomen debe ser visible y consciente, no la expansión del pecho.</p>
+          <ul class="key-points">
+            <li>Inhalar: el abdomen se expande hacia afuera y los costados</li>
+            <li>Exhalar: el abdomen regresa suavemente al centro</li>
+            <li>Ritmo inicial: inhalar 2 pasos · exhalar 2 pasos</li>
+            <li>La respiración guía el movimiento, no al revés</li>
+            <li>La inhalación coincide con elevar el pie, la exhalación con posarlo</li>
+          </ul>
+        </div>
+      </div>
+
+    </div><!-- /steps-grid -->
+  </div>
+
+  <!-- INTEGRACIÓN: SECUENCIA COMPLETA -->
+  <div class="breathing-card section">
+    <div>
+      <div class="section-title">Integración</div>
+      <h2 style="margin-bottom:16px;">Secuencia de un Paso Completo</h2>
+      <p style="font-family:'Noto Serif',serif;font-size:14px;color:#3a3530;line-height:1.85;margin-bottom:16px;">
+        La belleza del Tai Chi Walking reside en la sincronización de los cuatro elementos en cada paso. Practícala primero muy lentamente hasta que la secuencia se vuelva automática.
+      </p>
+      <ol style="list-style:none;counter-reset:seq;">
+        <li style="counter-increment:seq;padding:8px 0 8px 40px;position:relative;border-bottom:1px solid rgba(107,140,90,0.1);font-size:13.5px;color:#3a3530;">
+          <span style="position:absolute;left:0;font-family:'Cinzel',serif;font-size:11px;color:var(--bamboo);top:10px;line-height:1;">01</span>
+          <strong>Arraiga:</strong> Siente el peso en ambos pies. Sacro neutro, nuca larga.
+        </li>
+        <li style="counter-increment:seq;padding:8px 0 8px 40px;position:relative;border-bottom:1px solid rgba(107,140,90,0.1);font-size:13.5px;color:#3a3530;">
+          <span style="position:absolute;left:0;font-family:'Cinzel',serif;font-size:11px;color:var(--bamboo);top:10px;line-height:1;">02</span>
+          <strong>Inhala:</strong> El abdomen se expande. El peso se transfiere completamente al pie de soporte.
+        </li>
+        <li style="counter-increment:seq;padding:8px 0 8px 40px;position:relative;border-bottom:1px solid rgba(107,140,90,0.1);font-size:13.5px;color:#3a3530;">
+          <span style="position:absolute;left:0;font-family:'Cinzel',serif;font-size:11px;color:var(--bamboo);top:10px;line-height:1;">03</span>
+          <strong>Eleva:</strong> El pie libre se levanta suavemente. La rodilla lidera el movimiento hacia adelante.
+        </li>
+        <li style="counter-increment:seq;padding:8px 0 8px 40px;position:relative;border-bottom:1px solid rgba(107,140,90,0.1);font-size:13.5px;color:#3a3530;">
+          <span style="position:absolute;left:0;font-family:'Cinzel',serif;font-size:11px;color:var(--bamboo);top:10px;line-height:1;">04</span>
+          <strong>Exhala:</strong> El talón toca el suelo. El peso rueda lentamente. El abdomen regresa.
+        </li>
+        <li style="counter-increment:seq;padding:8px 0 8px 40px;position:relative;font-size:13.5px;color:#3a3530;">
+          <span style="position:absolute;left:0;font-family:'Cinzel',serif;font-size:11px;color:var(--bamboo);top:10px;line-height:1;">05</span>
+          <strong>Completa:</strong> El peso llega a la almohadilla delantera. Repite con el otro pie.
+        </li>
+      </ol>
+    </div>
+    <div style="display:flex;justify-content:center;align-items:center;">
+      <svg viewBox="0 0 240 300" xmlns="http://www.w3.org/2000/svg" width="220">
+        <!-- Figura humana caminando estilizada -->
+        <!-- cabeza -->
+        <circle cx="120" cy="35" r="22" fill="#8fa8a0" opacity="0.3"/>
+        <circle cx="120" cy="35" r="16" fill="#8fa8a0" opacity="0.4"/>
+        <!-- nuca alargada -->
+        <line x1="120" y1="13" x2="120" y2="5" stroke="#6b8c5a" stroke-width="2"/>
+        <line x1="116" y1="5" x2="124" y2="5" stroke="#d4a843" stroke-width="1.5"/>
+        <text x="128" y="8" font-size="8" fill="#b8860b" font-family="sans-serif">↑ nuca</text>
+
+        <!-- torso -->
+        <path d="M105,57 Q120,60 135,57 L138,120 Q120,126 102,120 Z" fill="#8fa8a0" opacity="0.25"/>
+        <line x1="120" y1="57" x2="120" y2="125" stroke="#6b8c5a" stroke-width="1" stroke-dasharray="3,2" opacity="0.5"/>
+
+        <!-- brazos relajados -->
+        <path d="M105,65 Q90,85 88,110" stroke="#8fa8a0" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.4"/>
+        <path d="M135,65 Q152,85 154,105" stroke="#8fa8a0" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.4"/>
+        <!-- hombros bajos indicador -->
+        <text x="60" y="70" font-size="8.5" fill="#6b8c5a" font-family="sans-serif">Hombros↓</text>
+
+        <!-- pelvis / sacro -->
+        <ellipse cx="120" cy="125" rx="22" ry="12" fill="#6b8c5a" opacity="0.2"/>
+        <text x="148" y="128" font-size="8.5" fill="#b8860b" font-family="sans-serif">Sacro neutro</text>
+
+        <!-- pierna derecha adelante -->
+        <path d="M130,125 Q138,160 135,200" stroke="#8fa8a0" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <!-- rodilla derecha -->
+        <circle cx="134" cy="162" r="8" fill="#6b8c5a" opacity="0.35"/>
+        <text x="148" y="165" font-size="8.5" fill="#6b8c5a" font-family="sans-serif">Rodilla suave</text>
+        <!-- pie derecho adelante -->
+        <ellipse cx="134" cy="200" rx="18" ry="7" fill="#6b8c5a" opacity="0.5" transform="rotate(-5,134,200)"/>
+        <text x="100" y="220" font-size="8.5" fill="#6b8c5a" font-family="sans-serif">Talón primero</text>
+
+        <!-- pierna izquierda atrás -->
+        <path d="M110,125 Q100,160 92,200" stroke="#8fa8a0" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.3"/>
+        <!-- pie izquierdo atrás -->
+        <ellipse cx="91" cy="200" rx="16" ry="6" fill="#8fa8a0" opacity="0.4" transform="rotate(8,91,200)"/>
+
+        <!-- Dantian pulsando -->
+        <circle cx="120" cy="108" r="10" fill="#d4a843" opacity="0.2"/>
+        <circle cx="120" cy="108" r="6" fill="#d4a843" opacity="0.35"/>
+        <text x="120" y="112" text-anchor="middle" font-size="8" fill="#b8860b" font-family="sans-serif">丹田</text>
+
+        <!-- carriles -->
+        <line x1="91" y1="230" x2="91" y2="275" stroke="#a8c49a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="134" y1="230" x2="134" y2="275" stroke="#a8c49a" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="91" y="285" text-anchor="middle" font-size="8" fill="#6b8c5a" font-family="sans-serif">Carril I</text>
+        <text x="134" y="285" text-anchor="middle" font-size="8" fill="#6b8c5a" font-family="sans-serif">Carril D</text>
+        <line x1="91" y1="270" x2="134" y2="270" stroke="#d4a843" stroke-width="1"/>
+        <text x="112" y="298" text-anchor="middle" font-size="8" fill="#b8860b" font-family="sans-serif">≈ ancho caderas</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- TABLA DE ERRORES -->
+  <div class="errors-section section">
+    <div class="section-title">Diagnóstico</div>
+    <h2>Errores Comunes y Correcciones Técnicas</h2>
+
+    <table class="errors-table">
+      <thead>
+        <tr>
+          <th style="width:30%">Error</th>
+          <th style="width:35%">Causa & Consecuencia</th>
+          <th style="width:35%">Corrección Técnica</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <span class="badge badge-error">① Tensión</span>
+            <span class="error-name">Hombros elevados y tensos</span>
+            <span class="error-cause">Los hombros "suben" hacia las orejas, la zona trapecial se contrae, la respiración se hace superficial (torácica).</span>
+          </td>
+          <td style="color:#5a5048;font-size:13px;">
+            La tensión en hombros proviene frecuentemente del esfuerzo mental de "hacerlo bien". También activa la cadena posterior y bloquea la libre oscilación de los brazos. Reduce la percepción sensorial de los pies.
+          </td>
+          <td>
+            <span class="badge badge-fix">Corrección</span>
+            <span class="correction-text">
+              Antes de cada sesión: levanta los hombros hasta las orejas, aguanta 2 segundos, suéltalos con una exhalación sonora. Repite 3 veces. Durante la práctica, la imagen mental es: <em>"los hombros se derriten como mantequilla al sol"</em>. Los codos caen pesados, las muñecas flojas.
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="badge badge-error">② Mecánico</span>
+            <span class="error-name">Paso demasiado largo</span>
+            <span class="error-cause">La zancada excede la capacidad de control. El talón golpea el suelo en vez de posarse. Se pierde el rodamiento fluido y la conexión con el Dantian.</span>
+          </td>
+          <td style="color:#5a5048;font-size:13px;">
+            Un paso largo requiere bloquear la rodilla y "caer" el peso en vez de transferirlo. Genera impacto articular, interrumpe la respiración sincronizada y fragmenta la conciencia corporal. La velocidad aumenta sin ganancia en calidad.
+          </td>
+          <td>
+            <span class="badge badge-fix">Corrección</span>
+            <span class="correction-text">
+              La medida correcta: el pie adelantado no pasa más allá de donde llegaría el otro pie si estuvieras de pie. Practica en cámara lenta. Test: ¿Puedes detenerte en cualquier punto del paso sin perder el equilibrio? Si la respuesta es no, el paso es demasiado largo.
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="badge badge-error">③ Equilibrio</span>
+            <span class="error-name">Pérdida de equilibrio / bamboleo lateral</span>
+            <span class="error-cause">El cuerpo oscila de lado a lado en cada paso. La pelvis se desplaza lateralmente en vez de mantenerse centrada. El centro de gravedad se desestabiliza.</span>
+          </td>
+          <td style="color:#5a5048;font-size:13px;">
+            Suele deberse a caminar en "un solo carril" (línea recta) en vez de en dos, o a transferir el peso de forma abrupta. También puede reflejar debilidad en la musculatura de cadera o exceso de velocidad.
+          </td>
+          <td>
+            <span class="badge badge-fix">Corrección</span>
+            <span class="correction-text">
+              Verifica la distancia entre los dos carriles (ancho de caderas). Practica el "peso 100%": antes de mover el pie libre, asegúrate de que el 100% del peso está en el pie de soporte. Usa la imagen: <em>"soy un árbol con raíces profundas en el pie de apoyo"</em>. Reduce la velocidad a la mitad.
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="badge badge-error">④ Respiración</span>
+            <span class="error-name">Respiración torácica o contenida</span>
+            <span class="error-cause">El pecho sube y baja en vez del abdomen. O directamente se contiene la respiración en momentos de concentración, lo que aumenta la tensión sistémica.</span>
+          </td>
+          <td style="color:#5a5048;font-size:13px;">
+            La respiración superficial activa el sistema nervioso simpático (estrés), eleva los hombros e impide la conexión con el Dantian. El Chi no circula adecuadamente y la práctica pierde su efecto regulador.
+          </td>
+          <td>
+            <span class="badge badge-fix">Corrección</span>
+            <span class="correction-text">
+              Coloca una mano en el abdomen antes de comenzar. Practica 10 respiraciones abdominales en reposo hasta que sea natural. Al caminar, imagina que inflas un globo pequeño justo bajo el ombligo en cada inhalación. La exhalación es pasiva — no empujes el abdomen hacia adentro.
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="badge badge-error">⑤ Postura</span>
+            <span class="error-name">Inclinación del torso hacia adelante</span>
+            <span class="error-cause">El tronco se inclina, la barbilla avanza, el sacro bascula. La persona "persigue" el paso en vez de que el paso emerja del centro.</span>
+          </td>
+          <td style="color:#5a5048;font-size:13px;">
+            Crea compresión en las vértebras cervicales y lumbares, estrecha el diafragma e impide la respiración abdominal plena. Es señal de que la velocidad supera la capacidad de integración.
+          </td>
+          <td>
+            <span class="badge badge-fix">Corrección</span>
+            <span class="correction-text">
+              Imagina un hilo de seda que tira de la coronilla hacia el cielo. La barbilla regresa ligeramente. Practica caminando con la nuca apoyada en una pared imaginaria vertical. Otra referencia: <em>"el torso es una vela de barco, el paso es el viento — no seas tú quien empuje"</em>.
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CRONOGRAMA 15 MINUTOS -->
+  <div class="timeline-section section">
+    <div class="section-title">Práctica Diaria</div>
+    <h2>Cronograma de 15 Minutos para Principiantes</h2>
+
+    <div class="timeline-track">
+      <div class="timeline-phase">
+        <div class="phase-color c1"></div>
+        <span class="phase-time">3</span>
+        <span class="phase-mins">minutos · Fase I</span>
+        <p class="phase-name">Enraizamiento y Preparación</p>
+        <p class="phase-desc">De pie, pies al ancho de caderas. 10 respiraciones abdominales lentas. Balanceo suave de hombros. Sacro neutro. Conciencia del Dantian.</p>
+      </div>
+      <div class="timeline-phase">
+        <div class="phase-color c2"></div>
+        <span class="phase-time">4</span>
+        <span class="phase-mins">minutos · Fase II</span>
+        <p class="phase-name">Transferencia de Peso</p>
+        <p class="phase-desc">Sin avanzar: transfiere el peso lentamente de un pie al otro. Siente la raíz. Añade la respiración (inhala al centrarte, exhala al transferir).</p>
+      </div>
+      <div class="timeline-phase">
+        <div class="phase-color c3"></div>
+        <span class="phase-time">5</span>
+        <span class="phase-mins">minutos · Fase III</span>
+        <p class="phase-name">Caminata Integrada</p>
+        <p class="phase-desc">Tai Chi Walking completo a velocidad muy lenta. Integra los 4 pilares. Longitud de paso corta. Distancia: 4–6 metros de ida y vuelta.</p>
+      </div>
+      <div class="timeline-phase">
+        <div class="phase-color c4"></div>
+        <span class="phase-time">3</span>
+        <span class="phase-mins">minutos · Fase IV</span>
+        <p class="phase-name">Cierre y Absorción</p>
+        <p class="phase-desc">Detente. Pies juntos o al ancho de caderas. Manos sobre el Dantian. 5–8 respiraciones. Siente el Chi circular. Anotación mental de sensaciones.</p>
+      </div>
+    </div>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar-label">
+        <span class="pb-text">0 min</span>
+        <span class="pb-text">3 min</span>
+        <span class="pb-text">7 min</span>
+        <span class="pb-text">12 min</span>
+        <span class="pb-text">15 min</span>
+      </div>
+      <div class="progress-bar">
+        <div class="pb-segment pb-s1"></div>
+        <div class="pb-segment pb-s2"></div>
+        <div class="pb-segment pb-s3"></div>
+        <div class="pb-segment pb-s4"></div>
+      </div>
+      <div style="display:flex;margin-top:8px;gap:0;">
+        <div style="flex:3;font-size:10px;color:#a8c49a;letter-spacing:0.05em;">PREPARACIÓN</div>
+        <div style="flex:4;font-size:10px;color:#6b8c5a;letter-spacing:0.05em;">TRANSFERENCIA</div>
+        <div style="flex:5;font-size:10px;color:#b8860b;letter-spacing:0.05em;">CAMINATA</div>
+        <div style="flex:3;font-size:10px;color:#8fa8a0;letter-spacing:0.05em;">CIERRE</div>
+      </div>
+    </div>
+
+    <div class="tips-box" style="margin-top:24px;">
+      <strong>Progresión Semanal</strong>
+      Semana 1–2: practica solo las Fases I y II (7 min). Semana 3–4: añade la Fase III a velocidad mínima (12 min). Semana 5 en adelante: sesión completa de 15 min. Después de 4 semanas, aumenta la Fase III en 2 minutos cada semana hasta llegar a 30 minutos totales.
+    </div>
+  </div>
+
+  <!-- CONSEJOS FINALES -->
+  <div class="section">
+    <div class="section-title">Sabiduría de Práctica</div>
+    <h2>Guías para la Sesión</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+      <div style="background:white;border:1px solid rgba(107,140,90,0.2);padding:20px 22px;box-shadow:0 2px 12px var(--shadow);">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.3em;color:var(--bamboo);margin-bottom:8px;">ENTORNO</div>
+        <p style="font-size:13.5px;color:#3a3530;line-height:1.7;">Practica sobre superficie plana y estable. Descalzo o con calzado plano (sin talón elevado). El exterior, en contacto con la tierra o césped, amplifica enormemente la experiencia de enraizamiento.</p>
+      </div>
+      <div style="background:white;border:1px solid rgba(107,140,90,0.2);padding:20px 22px;box-shadow:0 2px 12px var(--shadow);">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.3em;color:var(--bamboo);margin-bottom:8px;">VELOCIDAD</div>
+        <p style="font-size:13.5px;color:#3a3530;line-height:1.7;">La velocidad correcta es la más lenta en la que puedas mantener todos los elementos integrados. Si perdes la respiración o el equilibrio, reduce la velocidad. Más lento siempre es más avanzado.</p>
+      </div>
+      <div style="background:white;border:1px solid rgba(107,140,90,0.2);padding:20px 22px;box-shadow:0 2px 12px var(--shadow);">
+        <div style="font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.3em;color:var(--bamboo);margin-bottom:8px;">MENTE</div>
+        <p style="font-size:13.5px;color:#3a3530;line-height:1.7;">La mente del principiante es el estado ideal. No corrijas demasiado durante la práctica misma: observa, siente, ajusta suavemente. Después de la sesión revisa los puntos técnicos. Durante la sesión, habita el cuerpo.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.4em;color:var(--bamboo);margin-bottom:8px;">太极走路</div>
+  <div>Manual Ilustrado de Tai Chi Walking · Práctica para Principiantes</div>
+  <div style="margin-top:8px;opacity:0.6;">El cuerpo recuerda lo que la mente aprende.</div>
+</footer>
+
+</body>
+</html>
