@@ -89,7 +89,7 @@
         // Reloj elemental
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
 
-        // Variables de estado en la memoria del navegador (por defecto)
+        // Variables de estado en la memoria del navegador
         let estadoElectoral = {
             actas: 98.23,
             fujimori: 50.002,
@@ -113,33 +113,31 @@
                     data.items.slice(0, 5).forEach(item => {
                         const titulo = item.title;
                         
-                        // --- MOTOR DE PARSEO LOGICIAL EN VIVO ---
-                        // Busca patrones como "98.5%" o "99,2 %" en los titulares de prensa reales
+                        // --- MOTOR DE PARSEO ---
                         const regexPorcentaje = /(\d+[\.,]\d+)\s*%/;
                         const hallazgo = titulo.match(regexPorcentaje);
 
                         if (hallazgo) {
                             let numeroDetectado = parseFloat(hallazgo[1].replace(',', '.'));
                             
-                            // Si el número encontrado en las noticias es un avance real (mayor al actual pero menor o igual a 100)
                             if (numeroDetectado > estadoElectoral.actas && numeroDetectado <= 100) {
                                 estadoElectoral.actas = numeroDetectado;
                                 
-                                // Ajustar levemente los votos simulando el escrutinio de esas nuevas actas
                                 let variacion = (Math.random() - 0.5) * 0.05;
                                 estadoElectoral.fujimori = +(estadoElectoral.fujimori + variacion).toFixed(3);
                                 estadoElectoral.sanchez = +(100 - estadoElectoral.fujimori).toFixed(3);
 
-                                // Actualizar la interfaz de usuario en caliente
                                 domActualizar();
                                 alerta.innerHTML = `<span class="text-green-400 font-bold">¡ACTUALIZADO EN VIVO!</span> Detectado nuevo avance del ${numeroDetectado}% en titular de: "${item.author || 'Prensa'}"`;
                             }
                         }
 
-                        // Pintar la noticia analizada
+                        // Pintar la noticia con enlace navegable habilitado (target="_blank")
                         container.innerHTML += `
-                            <div class="p-3 bg-gray-950 rounded-xl border border-gray-800 text-xs space-y-1">
-                                <p class="text-gray-300 font-medium">${titulo}</p>
+                            <div class="p-3 bg-gray-950 rounded-xl border border-gray-800 text-xs space-y-1 hover:border-gray-700 transition shadow-sm">
+                                <p class="text-gray-300 font-medium hover:text-blue-400 transition">
+                                    <a href="${item.link}" target="_blank" rel="noopener noreferrer">${titulo}</a>
+                                </p>
                                 <p class="text-[10px] text-gray-500 font-mono">${item.author || 'Medio'} - ${new Date(item.pubDate).toLocaleTimeString()}</p>
                             </div>`;
                     });
@@ -160,7 +158,6 @@
             document.getElementById('bar-p2').style.width = `${estadoElectoral.sanchez}%`;
         }
 
-        // Primer escaneo y bucle infinito de escucha activa cada 2 minutos
         procesarNoticiasEnVivo();
         setInterval(procesarNoticiasEnVivo, 120000);
     </script>
