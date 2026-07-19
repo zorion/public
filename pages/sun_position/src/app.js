@@ -9,6 +9,7 @@ import {
 } from './skyline.js';
 import { makeGridLoader, makeSurfaceSampler } from './providers.js';
 import { destinationPoint } from './geo.js';
+import { parseShareParams, shareQuery } from './share.js';
 
 const AZ_MIN = 230;
 const AZ_MAX = 330;
@@ -401,12 +402,18 @@ function renderAll() {
 
 // ---------- controls ----------
 
+// Keep the address bar shareable: it always encodes the current spot.
+function syncUrl() {
+  history.replaceState(null, '', `${location.pathname}?${shareQuery(state)}`);
+}
+
 function setLocation(lat, lon, presetIndex = -1) {
   state.lat = Math.round(lat * 1e4) / 1e4;
   state.lon = Math.round(lon * 1e4) / 1e4;
   $('lat').value = state.lat;
   $('lon').value = state.lon;
   $('preset').value = String(presetIndex);
+  syncUrl();
   recomputeLocation();
 }
 
@@ -427,6 +434,7 @@ function initControls() {
 
   $('height').addEventListener('change', () => {
     state.extraHeightM = Math.max(0, parseFloat($('height').value) || 0);
+    syncUrl();
     recomputeLocation();
   });
 
@@ -504,4 +512,11 @@ function initControls() {
 
 initControls();
 $('time').dispatchEvent(new Event('input'));
-setLocation(PRESETS[0].lat, PRESETS[0].lon, 0);
+const shared = parseShareParams(location.search);
+if (shared.lat !== null) {
+  state.extraHeightM = shared.extraHeightM;
+  $('height').value = String(shared.extraHeightM);
+  setLocation(shared.lat, shared.lon);
+} else {
+  setLocation(PRESETS[0].lat, PRESETS[0].lon, 0);
+}
