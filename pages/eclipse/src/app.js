@@ -7,15 +7,19 @@ import {
   computeSkyline, computeNearField, obstructionAt, sunVisible, EYE_HEIGHT_M,
   NEAR_FIELD_DISTANCES_M,
 } from './skyline.js';
-import { makeGridLoader, makeSurfaceSampler } from './providers.js';
+import { makeGridLoader, makeSurfaceSampler, makeTileImageSource, geocode } from './providers.js';
 import { destinationPoint } from './geo.js';
 import { parseShareParams, shareQuery } from './share.js';
+import { OSM_TILE } from './map.js';
+import { createMapPicker } from './mapview.js';
 
 const AZ_MIN = 230;
 const AZ_MAX = 330;
 const AZ_STEP = 0.25;
 const NEAR_FIELD_HALF_WEDGE_DEG = 8;
 const ECLIPSE_DATE = '2026-08-12';
+// Below this the sun is set, and a direction arrow on the map means nothing.
+const SUN_RAY_MIN_ALTITUDE_DEG = -1;
 
 const PRESETS = [
   { name: 'Barcelona', lat: 41.3874, lon: 2.1686 },
@@ -35,6 +39,8 @@ const ctx = canvas.getContext('2d');
 
 const loadGrid = makeGridLoader(n => setStatus(`Descargando relieve… ${n} teselas`));
 const sampleSurface = makeSurfaceSampler();
+const tileSource = makeTileImageSource(OSM_TILE);
+let picker = null;
 
 const state = {
   lat: PRESETS[0].lat,
@@ -398,6 +404,10 @@ function renderPanorama() {
 function renderAll() {
   renderPanorama();
   renderVerdict();
+  const sun = sunPosition(selectedUtcMs(), state.lat, state.lon);
+  picker?.setSunAzimuth(
+    sun.apparentAltitudeDeg > SUN_RAY_MIN_ALTITUDE_DEG ? sun.azimuthDeg : null,
+  );
 }
 
 // ---------- controls ----------
@@ -407,14 +417,32 @@ function syncUrl() {
   history.replaceState(null, '', `${location.pathname}?${shareQuery(state)}`);
 }
 
-function setLocation(lat, lon, presetIndex = -1) {
+// `recenterMap: false` is for picks that came from the map itself — the view is
+// already where the visitor put it.
+function setLocation(lat, lon, { presetIndex = -1, recenterMap = true } = {}) {
   state.lat = Math.round(lat * 1e4) / 1e4;
   state.lon = Math.round(lon * 1e4) / 1e4;
   $('lat').value = state.lat;
   $('lon').value = state.lon;
   $('preset').value = String(presetIndex);
+  picker?.setMarker(state.lat, state.lon, { recenter: recenterMap });
   syncUrl();
   recomputeLocation();
+}
+
+function initMap() {
+  picker = createMapPicker({
+    canvas: $('picker'),
+    searchInput: $('place'),
+    searchButton: $('place-go'),
+    resultsList: $('place-results'),
+    statusEl: $('place-status'),
+    zoomInButton: $('zoom-in'),
+    zoomOutButton: $('zoom-out'),
+    tileSource,
+    geocode,
+    onPick: (lat, lon) => setLocation(lat, lon, { recenterMap: false }),
+  });
 }
 
 function initControls() {
@@ -423,7 +451,7 @@ function initControls() {
     PRESETS.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
   sel.addEventListener('change', () => {
     const p = PRESETS[Number(sel.value)];
-    if (p) setLocation(p.lat, p.lon, Number(sel.value));
+    if (p) setLocation(p.lat, p.lon, { presetIndex: Number(sel.value) });
   });
 
   for (const id of ['lat', 'lon']) {
@@ -510,6 +538,7 @@ function initControls() {
     `Todas las horas en tu zona horaria: ${Intl.DateTimeFormat().resolvedOptions().timeZone}.`;
 }
 
+initMap();
 initControls();
 $('time').dispatchEvent(new Event('input'));
 const shared = parseShareParams(location.search);
@@ -518,5 +547,5 @@ if (shared.lat !== null) {
   $('height').value = String(shared.extraHeightM);
   setLocation(shared.lat, shared.lon);
 } else {
-  setLocation(PRESETS[0].lat, PRESETS[0].lon, 0);
+  setLocation(PRESETS[0].lat, PRESETS[0].lon, { presetIndex: 0 });
 }
