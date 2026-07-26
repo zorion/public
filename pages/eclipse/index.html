@@ -57,7 +57,19 @@
   footer a { color: var(--dim); }
   .note { font-size: 0.8rem; color: var(--dim); margin-top: 0.4rem; }
 
-  /* Location picker */
+  /* Location picker — collapsed by default, so no map tiles load unless asked for */
+  #map-panel summary {
+    cursor: pointer; font-size: 0.9rem; font-weight: 600;
+    display: flex; align-items: center; gap: 0.5rem; list-style: none;
+  }
+  #map-panel summary::-webkit-details-marker { display: none; }
+  #map-panel summary::after {
+    content: '▾'; margin-left: auto; color: var(--dim); font-size: 0.8rem;
+  }
+  #map-panel[open] summary::after { content: '▴'; }
+  #map-panel summary:hover { color: var(--accent); }
+  #map-panel summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  .map-body { margin-top: 0.9rem; }
   .search { display: flex; gap: 0.5rem; }
   .search input { flex: 1; min-width: 0; }
   .map-wrap { position: relative; margin-top: 0.7rem; }
@@ -108,26 +120,29 @@
     <button id="geolocate">📍 Mi ubicación</button>
   </section>
 
-  <section class="panel" aria-label="Mapa">
-    <div class="search">
-      <label class="sr-only" for="place">Buscar un lugar por su nombre</label>
-      <input id="place" type="search" autocomplete="off" placeholder="Buscar un lugar: Àger, Montsec, Tibidabo…">
-      <button id="place-go">Buscar</button>
-    </div>
-    <ul id="place-results" hidden></ul>
-    <p id="place-status" class="note" aria-live="polite"></p>
-    <div class="map-wrap">
-      <canvas id="picker" tabindex="0" role="application"
-        aria-label="Mapa. Haz clic para elegir el punto de observación; flechas para desplazar, + y − para acercar, Intro para elegir el centro."></canvas>
-      <div class="map-zoom">
-        <button id="zoom-in" type="button" aria-label="Acercar">+</button>
-        <button id="zoom-out" type="button" aria-label="Alejar">−</button>
+  <details class="panel" id="map-panel">
+    <summary>🗺️ Elegir el punto en un mapa</summary>
+    <div class="map-body">
+      <div class="search">
+        <label class="sr-only" for="place">Buscar un lugar por su nombre</label>
+        <input id="place" type="search" autocomplete="off" placeholder="Buscar un lugar: Àger, Montsec, Tibidabo…">
+        <button id="place-go">Buscar</button>
       </div>
+      <ul id="place-results" hidden></ul>
+      <p id="place-status" class="note" aria-live="polite"></p>
+      <div class="map-wrap">
+        <canvas id="picker" tabindex="0" role="application"
+          aria-label="Mapa. Haz clic para elegir el punto de observación; flechas para desplazar, + y − para acercar, Intro para elegir el centro."></canvas>
+        <div class="map-zoom">
+          <button id="zoom-in" type="button" aria-label="Acercar">+</button>
+          <button id="zoom-out" type="button" aria-label="Alejar">−</button>
+        </div>
+      </div>
+      <p class="note">Haz clic en el mapa para elegir el punto: arrastra para desplazarte y usa la rueda o dos
+        dedos para acercar. La línea naranja apunta a donde estará el sol a la hora seleccionada — es la
+        dirección que tiene que estar despejada.</p>
     </div>
-    <p class="note">Haz clic en el mapa para elegir el punto: arrastra para desplazarte y usa la rueda o dos
-      dedos para acercar. La línea naranja apunta a donde estará el sol a la hora seleccionada — es la
-      dirección que tiene que estar despejada.</p>
-  </section>
+  </details>
 
   <section class="panel" aria-label="Fecha y hora">
     <div class="timeline">

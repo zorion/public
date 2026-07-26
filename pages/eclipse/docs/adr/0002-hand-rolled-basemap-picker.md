@@ -31,6 +31,11 @@ fractional zoom, no inertia, no retina tiles, no rotation.
   tiles are fetched only for what is on screen and the attribution under the map is a
   requirement, and geocoding runs once per explicit search — never per keystroke —
   behind a client-side rate limit.
+- The picker sits collapsed in a `<details>`, so a visitor who never opens it costs the
+  tile server nothing and the page loads exactly as it did before. Layout is driven by a
+  `ResizeObserver` on the canvas rather than a toggle handler, which covers being
+  revealed, resized and rotated with one code path and keeps `app.js` unaware that the
+  panel collapses at all.
 - Zoom steps are whole levels, so tiles are always drawn at native size. Because a step
   invalidates every tile id at once, the picker paints stand-ins from cached ancestor or
   child tiles; without that, every zoom would flash the empty background.

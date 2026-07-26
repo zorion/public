@@ -41,9 +41,15 @@ export function createMapPicker({
 
   // ---------- drawing ----------
 
+  // False while the canvas has no box — it starts collapsed inside a <details>.
+  // Everything downstream checks this, so a hidden picker draws nothing and, in
+  // particular, requests no tiles until someone opens it.
+  let visible = false;
+
   function layout() {
     const rect = canvas.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+    visible = rect.width > 0 && rect.height > 0;
+    if (!visible) return;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
@@ -53,7 +59,7 @@ export function createMapPicker({
   }
 
   function scheduleDraw() {
-    if (drawQueued) return;
+    if (drawQueued || !visible) return;
     drawQueued = true;
     requestAnimationFrame(() => {
       drawQueued = false;
@@ -322,10 +328,13 @@ export function createMapPicker({
     scheduleDraw();
   });
 
-  window.addEventListener('resize', () => {
+  // Covers every way the canvas can gain or change its box: being revealed out
+  // of the collapsed <details>, a window resize, a device rotation. Setting
+  // canvas.width/height cannot feed back into this, since the CSS box is fixed.
+  new ResizeObserver(() => {
     layout();
     scheduleDraw();
-  });
+  }).observe(canvas);
 
   // ---------- place-name search ----------
 
