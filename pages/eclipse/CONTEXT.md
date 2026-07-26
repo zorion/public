@@ -4,8 +4,16 @@
 
 ### Location
 The point on Earth the visitor is exploring: a latitude/longitude pair. Chosen by
-browser geolocation, manual lat/lon entry, or a preset city. The page has no notion
-of place *names* beyond the preset labels — a Location is coordinates, nothing more.
+browser geolocation, manual lat/lon entry, a preset city, a click on the Picker, or a
+Picker name search. A Location is still only coordinates: place names are an input to
+finding one, never part of it, and nothing downstream knows the name of anywhere.
+
+### Picker
+The basemap beside the controls, there so a visitor can choose a Location without
+leaving the page for an external map. Panning, zooming and clicking it are the only
+map interactions; a name search resolves a typed place to coordinates. The Picker
+answers "where am I pointing?" and nothing else — the Skyline and the verdict are
+still computed purely from the resulting coordinates.
 
 ### Sun Path
 The sequence of sun positions (azimuth + elevation) over one calendar day at a

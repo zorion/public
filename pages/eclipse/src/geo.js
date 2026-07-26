@@ -53,6 +53,14 @@ export function lonLatToTile(lonDeg, latDeg, z) {
   return { x, y };
 }
 
+// Inverse of lonLatToTile: the coordinates of a (fractional) tile position.
+export function tileToLonLat(x, y, z) {
+  const n = 2 ** z;
+  const lon = (x / n) * 360 - 180;
+  const lat = toDeg(Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / n))));
+  return { lat, lon };
+}
+
 // Ground meters per pixel of a web-mercator tile at a latitude.
 export function metersPerPixel(latDeg, z, tileSizePx) {
   const worldMeters = 2 * Math.PI * EARTH_RADIUS_M * Math.cos(toRad(latDeg));
