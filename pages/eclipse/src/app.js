@@ -149,8 +149,14 @@ function visibilityOf(event) {
   return sunVisible(state.terrainSkyline, state.nearField, event.azimuthDeg, event.apparentAltitudeDeg);
 }
 
+// Visibility is three-valued: until this Location's skyline has arrived it is
+// *unknown*, which must never be worded or coloured as "oculto" — the terrain
+// that would hide the sun is not drawn yet either, so a red verdict at this
+// point contradicts the panorama right below it.
+const PENDING_HORIZON = '<span class="pending">Comprobando el relieve del horizonte…</span>';
+
 function visLabel(v) {
-  if (v === null) return '—';
+  if (v === null) return '<span class="pending" title="Comprobando el relieve…">…</span>';
   return v ? '<strong class="good">visible</strong>' : '<strong class="bad">oculto</strong>';
 }
 
@@ -175,6 +181,7 @@ function renderVerdict() {
   const el = $('verdict');
   const lc = state.eclipse;
   const isEclipseDay = state.dateStr === ECLIPSE_DATE;
+  const skylineKnown = state.terrainSkyline !== null;
   const sunset = effectiveSunsetMs();
   const sunsetLine = sunset
     ? `Ocaso tras el horizonte local: <strong>${fmtTime(sunset)}</strong>.`
@@ -182,16 +189,23 @@ function renderVerdict() {
 
   if (!isEclipseDay) {
     const s = sunPosition(selectedUtcMs(), state.lat, state.lon);
-    const v = state.terrainSkyline
-      ? sunVisible(state.terrainSkyline, state.nearField, s.azimuthDeg, s.apparentAltitudeDeg)
-      : null;
+    const where = `Sol a las ${fmtTime(selectedUtcMs())}: altura ${s.apparentAltitudeDeg.toFixed(1)}°,
+      acimut ${s.azimuthDeg.toFixed(1)}°`;
     el.className = 'panel';
-    el.innerHTML = `Sol a las ${fmtTime(selectedUtcMs())}: altura ${s.apparentAltitudeDeg.toFixed(1)}°,
-      acimut ${s.azimuthDeg.toFixed(1)}° — ${visLabel(v)}. ${sunsetLine}`;
+    el.innerHTML = skylineKnown
+      ? `${where} — ${visLabel(visibilityOf(s))}. ${sunsetLine}`
+      : `${where}. ${PENDING_HORIZON}`;
     return;
   }
 
-  if (!lc?.visible) {
+  // Not computed yet is not the same as "not visible from here".
+  if (!lc) {
+    el.className = 'panel';
+    el.innerHTML = PENDING_HORIZON;
+    return;
+  }
+
+  if (!lc.visible) {
     el.className = 'panel bad';
     el.textContent = 'El eclipse del 12 de agosto de 2026 no es visible desde este punto.';
     return;
@@ -214,7 +228,10 @@ function renderVerdict() {
     const v2 = visibilityOf(lc.c2);
     const v3 = visibilityOf(lc.c3);
     const dur = Math.round(lc.totalityDurationS);
-    if (v2 && v3) {
+    if (!skylineKnown) {
+      el.className = 'panel';
+      headline = `Aquí la totalidad dura <strong>${dur} s</strong>. ${PENDING_HORIZON}`;
+    } else if (v2 && v3) {
       el.className = 'panel good';
       headline = `<strong class="good">ECLIPSE TOTAL VISIBLE</strong> desde aquí —
         totalidad de ${dur} s por encima del horizonte local.`;
@@ -229,13 +246,15 @@ function renderVerdict() {
     }
   } else {
     el.className = 'panel';
-    const v = visibilityOf(lc.max);
     headline = `Aquí el eclipse será <strong>parcial</strong> (magnitud
       ${(lc.magnitude * 100).toFixed(1)}%): la franja de totalidad queda fuera de este punto.
-      Máximo a las ${fmtTime(lc.max.utcMs, true)}, ${visLabel(v)}.`;
+      Máximo a las ${fmtTime(lc.max.utcMs, true)}` +
+      (skylineKnown ? `, ${visLabel(visibilityOf(lc.max))}.` : `. ${PENDING_HORIZON}`);
   }
 
-  const nfNote = state.nearField
+  // One pending message at a time: while the terrain horizon is still unknown,
+  // saying buildings have not been queried yet adds noise, not information.
+  const nfNote = !skylineKnown || state.nearField
     ? ''
     : (inCatalonia(state.lat, state.lon)
       ? '<p class="note">Edificios aún no consultados…</p>'

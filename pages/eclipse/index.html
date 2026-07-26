@@ -51,6 +51,11 @@
   #verdict table { margin-top: 0.5rem; border-collapse: collapse; font-size: 0.88rem; }
   #verdict td, #verdict th { padding: 0.15rem 0.9rem 0.15rem 0; text-align: left; font-variant-numeric: tabular-nums; }
   #verdict th { color: var(--dim); font-weight: 500; }
+  .pending { color: var(--dim); font-style: italic; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pending { animation: pending-pulse 1.4s ease-in-out infinite; }
+  }
+  @keyframes pending-pulse { 50% { opacity: 0.45; } }
   canvas { width: 100%; height: auto; border-radius: 8px; display: block; touch-action: pan-y; cursor: grab; }
   #readout { font-size: 0.82rem; color: var(--dim); font-variant-numeric: tabular-nums; min-height: 1.2rem; }
   footer { font-size: 0.75rem; color: var(--dim); }
