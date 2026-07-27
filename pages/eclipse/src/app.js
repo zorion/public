@@ -47,7 +47,9 @@ const state = {
   lon: PRESETS[0].lon,
   extraHeightM: 0,
   dateStr: ECLIPSE_DATE,
-  minuteOfDay: 20 * 60 + 29,
+  // Seconds, not minutes: contact times land mid-minute and totality lasts
+  // ~90 s, so rounding C2 to its minute can miss totality altogether.
+  secondOfDay: (20 * 60 + 29) * 60,
   groundElevM: null,
   eyeElevM: null,
   terrainSkyline: null,
@@ -61,13 +63,23 @@ const state = {
 
 function selectedUtcMs() {
   const [y, m, d] = state.dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d, 0, state.minuteOfDay).getTime();
+  return new Date(y, m - 1, d, 0, 0, state.secondOfDay).getTime();
 }
 
 function fmtTime(ms, withSeconds = false) {
   return new Date(ms).toLocaleTimeString('es-ES', {
     hour: '2-digit', minute: '2-digit', ...(withSeconds ? { second: '2-digit' } : {}),
   });
+}
+
+const pad2 = n => String(n).padStart(2, '0');
+
+// The timeline label. Seconds appear only when the selected instant has them —
+// that is what tells the visitor they are on C2 exactly, not on its minute.
+function fmtSelected() {
+  const s = state.secondOfDay % 60;
+  const hhmm = `${pad2(Math.floor(state.secondOfDay / 3600))}:${pad2(Math.floor(state.secondOfDay / 60) % 60)}`;
+  return s ? `${hhmm}:${pad2(s)}` : hhmm;
 }
 
 // ---------- skyline computation ----------
@@ -177,6 +189,13 @@ function effectiveSunsetMs() {
   return last;
 }
 
+// Every clock reading the verdict shows is somewhere the visitor may want the
+// sun to be, so each one is a control that moves the timeline there.
+function atTime(utcMs, withSeconds = false) {
+  return `<button type="button" class="at-time" data-utc-ms="${utcMs}"
+    title="Llevar la línea de tiempo a esta hora">${fmtTime(utcMs, withSeconds)}</button>`;
+}
+
 function renderVerdict() {
   const el = $('verdict');
   const lc = state.eclipse;
@@ -184,12 +203,12 @@ function renderVerdict() {
   const skylineKnown = state.terrainSkyline !== null;
   const sunset = effectiveSunsetMs();
   const sunsetLine = sunset
-    ? `Ocaso tras el horizonte local: <strong>${fmtTime(sunset)}</strong>.`
+    ? `Ocaso tras el horizonte local: <strong>${atTime(sunset)}</strong>.`
     : '';
 
   if (!isEclipseDay) {
     const s = sunPosition(selectedUtcMs(), state.lat, state.lon);
-    const where = `Sol a las ${fmtTime(selectedUtcMs())}: altura ${s.apparentAltitudeDeg.toFixed(1)}°,
+    const where = `Sol a las ${fmtTime(selectedUtcMs(), state.secondOfDay % 60 !== 0)}: altura ${s.apparentAltitudeDeg.toFixed(1)}°,
       acimut ${s.azimuthDeg.toFixed(1)}°`;
     el.className = 'panel';
     el.innerHTML = skylineKnown
@@ -219,7 +238,7 @@ function renderVerdict() {
     ['C4 — último contacto', lc.c4],
   ].filter(([, e]) => e).map(([label, e]) => {
     const v = visibilityOf(e);
-    return `<tr><th>${label}</th><td>${fmtTime(e.utcMs, true)}</td>
+    return `<tr><th>${label}</th><td>${atTime(e.utcMs, true)}</td>
       <td>${e.apparentAltitudeDeg.toFixed(1)}°</td><td>${visLabel(v)}</td></tr>`;
   }).join('');
 
@@ -248,7 +267,7 @@ function renderVerdict() {
     el.className = 'panel';
     headline = `Aquí el eclipse será <strong>parcial</strong> (magnitud
       ${(lc.magnitude * 100).toFixed(1)}%): la franja de totalidad queda fuera de este punto.
-      Máximo a las ${fmtTime(lc.max.utcMs, true)}` +
+      Máximo a las ${atTime(lc.max.utcMs, true)}` +
       (skylineKnown ? `, ${visLabel(visibilityOf(lc.max))}.` : `. ${PENDING_HORIZON}`);
   }
 
@@ -473,6 +492,26 @@ function openPicker() {
   panel.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
 }
 
+// Push the selected instant into the timeline widgets. The slider stays
+// minute-granular — dragging a second-resolution slider is unusable — so its
+// thumb goes to the nearest minute while state keeps the exact second.
+function syncTimeUI() {
+  $('time').value = String(Math.round(state.secondOfDay / 60));
+  $('time-label').textContent = fmtSelected();
+}
+
+// Move the whole timeline to one instant, seconds included. Takes the date from
+// it too, so an instant that falls on another day in the browser's timezone
+// still shows the right sun.
+function setInstant(utcMs) {
+  const t = new Date(utcMs);
+  state.dateStr = `${t.getFullYear()}-${pad2(t.getMonth() + 1)}-${pad2(t.getDate())}`;
+  state.secondOfDay = t.getHours() * 3600 + t.getMinutes() * 60 + t.getSeconds();
+  $('date').value = state.dateStr;
+  syncTimeUI();
+  renderAll();
+}
+
 function initControls() {
   const sel = $('preset');
   sel.innerHTML = '<option value="-1">— personalizado —</option>' +
@@ -512,29 +551,29 @@ function initControls() {
   });
 
   const time = $('time');
-  time.value = String(state.minuteOfDay);
   time.addEventListener('input', () => {
-    state.minuteOfDay = Number(time.value);
-    $('time-label').textContent =
-      `${String(Math.floor(state.minuteOfDay / 60)).padStart(2, '0')}:${String(state.minuteOfDay % 60).padStart(2, '0')}`;
+    // Dragging the slider is a fresh choice of minute: it drops any seconds
+    // carried in from a contact time.
+    state.secondOfDay = Number(time.value) * 60;
+    $('time-label').textContent = fmtSelected();
     renderAll();
   });
 
-  $('now').addEventListener('click', () => {
-    const now = new Date();
-    $('date').value = state.dateStr =
-      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    time.value = String(now.getHours() * 60 + now.getMinutes());
-    time.dispatchEvent(new Event('input'));
+  // Any clock reading in the verdict jumps the timeline to that instant.
+  $('verdict').addEventListener('click', e => {
+    const button = e.target.closest('button[data-utc-ms]');
+    if (button) setInstant(Number(button.dataset.utcMs));
   });
 
+  $('now').addEventListener('click', () => setInstant(Date.now()));
+
   $('eclipse-btn').addEventListener('click', () => {
-    $('date').value = state.dateStr = ECLIPSE_DATE;
     if (state.eclipse?.visible) {
-      const local = new Date(state.eclipse.max.utcMs);
-      time.value = String(local.getHours() * 60 + local.getMinutes());
+      setInstant(state.eclipse.max.utcMs);
+      return;
     }
-    time.dispatchEvent(new Event('input'));
+    state.dateStr = $('date').value = ECLIPSE_DATE;
+    renderAll();
   });
 
   // Drag to pan the panorama.
@@ -571,7 +610,7 @@ function initControls() {
 
 initMap();
 initControls();
-$('time').dispatchEvent(new Event('input'));
+syncTimeUI();
 const shared = parseShareParams(location.search);
 if (shared.lat !== null) {
   state.extraHeightM = shared.extraHeightM;

@@ -41,7 +41,8 @@
   button.primary { background: var(--accent); color: #1a1408; border: none; font-weight: 600; }
   .timeline { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
   .timeline input[type="range"] { flex: 1; min-width: 240px; padding: 0; accent-color: var(--accent); }
-  #time-label { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 4.5rem; }
+  /* Sized for HH:MM:SS so gaining seconds does not shuffle the timeline row. */
+  #time-label { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 5.6rem; }
   #status { font-size: 0.85rem; color: var(--dim); min-height: 1.3rem; }
   #verdict { font-size: 0.98rem; border-left: 4px solid var(--dim); padding-left: 0.8rem; }
   #verdict.good { border-color: var(--good); }
@@ -51,6 +52,12 @@
   #verdict table { margin-top: 0.5rem; border-collapse: collapse; font-size: 0.88rem; }
   #verdict td, #verdict th { padding: 0.15rem 0.9rem 0.15rem 0; text-align: left; font-variant-numeric: tabular-nums; }
   #verdict th { color: var(--dim); font-weight: 500; }
+  /* Times in the verdict are controls, not text: they move the timeline. */
+  .at-time {
+    background: none; border: none; padding: 0; font: inherit; color: inherit;
+    text-decoration: underline dotted; text-underline-offset: 3px; cursor: pointer;
+  }
+  .at-time:hover, .at-time:focus-visible { color: var(--accent); text-decoration-style: solid; }
   .pending { color: var(--dim); font-style: italic; }
   @media (prefers-reduced-motion: no-preference) {
     .pending { animation: pending-pulse 1.4s ease-in-out infinite; }
