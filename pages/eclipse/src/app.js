@@ -464,13 +464,25 @@ function initMap() {
   });
 }
 
+// Reveals the picker and brings it into view. The <details> stays collapsed
+// until something asks for it, so no tiles load for visitors who never pick.
+function openPicker() {
+  const panel = $('map-panel');
+  panel.open = true;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  panel.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+}
+
 function initControls() {
   const sel = $('preset');
   sel.innerHTML = '<option value="-1">— personalizado —</option>' +
     PRESETS.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
   sel.addEventListener('change', () => {
     const p = PRESETS[Number(sel.value)];
+    // "— personalizado —" names no place: it is a request to choose one, so
+    // open the map rather than leaving the visitor on an unchanged page.
     if (p) setLocation(p.lat, p.lon, { presetIndex: Number(sel.value) });
+    else openPicker();
   });
 
   for (const id of ['lat', 'lon']) {
