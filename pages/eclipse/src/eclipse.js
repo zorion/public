@@ -4,7 +4,7 @@
 // Solar Eclipses". Pure functions, no I/O.
 
 import { toRad, toDeg } from './geo.js';
-import { sunPosition } from './solar.js';
+import { sunPosition, horizontalPosition } from './solar.js';
 
 // t0 = 2026-08-12 18:00:00 TDT; elements valid for 15h ≤ TDT ≤ 21h.
 // Polynomials are evaluated at t = hours since t0 (in TDT).
@@ -146,6 +146,90 @@ export function totalityMargin(latDeg, lonDeg, heightM = 0, el = ECLIPSE_2026_08
   // for places whose sun has already set. Taking the smaller of the two keeps
   // one continuous field across both kinds of edge.
   return Math.min(insideUmbra, s.zeta);
+}
+
+// ---------- the Moon's disk against the sun's ----------
+
+const clampCos = x => Math.min(Math.max(x, -1), 1);
+
+// Fraction of the sun's disk area hidden behind the moon's: 0 while the limbs
+// are still apart, 1 once the sun is wholly behind. Circle-circle lens area —
+// the middle branch is the partially bitten disk.
+function obscurationOf(rSun, rMoon, sep) {
+  if (sep >= rSun + rMoon) return 0;
+  if (sep <= Math.abs(rMoon - rSun)) return rMoon >= rSun ? 1 : (rMoon / rSun) ** 2;
+  const lens =
+    rSun * rSun * Math.acos(clampCos((sep * sep + rSun * rSun - rMoon * rMoon) / (2 * sep * rSun))) +
+    rMoon * rMoon * Math.acos(clampCos((sep * sep + rMoon * rMoon - rSun * rSun) / (2 * sep * rMoon))) -
+    0.5 * Math.sqrt(
+      (-sep + rSun + rMoon) * (sep + rSun - rMoon) *
+      (sep - rSun + rMoon) * (sep + rSun + rMoon),
+    );
+  return lens / (Math.PI * rSun * rSun);
+}
+
+// Where the Moon's disk sits against the sun's, from the very same elements
+// that give the Contact Times — no lunar ephemeris. L1 and |L2| are, by
+// definition, the axis distances at which the moon's limb touches the sun's
+// from outside and from inside; those two tangencies fix both the scale from
+// Earth radii to degrees of separation and the moon's own semidiameter, so the
+// disk drawn here bites at exactly the C1 this page already prints.
+//
+// Separation direction: the shadow axis is perpendicular to the fundamental
+// plane, so the observer's offset (u, v) from it — ξ east, η north — is the
+// direction the moon's centre appears displaced from the sun's, in the sky.
+//
+// Returns null outside the window the elements cover: there the moon is
+// nowhere near the sun and the polynomials would be extrapolation.
+export function moonDisk(msUTC, latDeg, lonDeg, heightM = 0, el = ECLIPSE_2026_08_12) {
+  const t = tOfUtcMs(el, msUTC);
+  const hour = tdtHourOfT(el, t);
+  if (hour < el.validTdtHours[0] || hour > el.validTdtHours[1]) return null;
+
+  const sun = sunPosition(msUTC, latDeg, lonDeg);
+  const s = shadowState(el, t, latDeg, lonDeg, heightM);
+  const sunSemi = sun.semiDiameterDeg;
+
+  // (L1 + L2) Earth radii of separation span exactly one solar diameter, and
+  // (L1 - L2) one lunar diameter — this eclipse's moon is the larger, which is
+  // what makes it total rather than annular.
+  const degPerRadius = 2 * sunSemi / (s.L1 + s.L2);
+  const eastDeg = degPerRadius * s.u;
+  const northDeg = degPerRadius * s.v;
+  const semiDiameterDeg = sunSemi * (s.L1 - s.L2) / (s.L1 + s.L2);
+  const separationDeg = Math.hypot(eastDeg, northDeg);
+
+  // Carried to the moon's own coordinates as a spherical offset, not by adding
+  // degrees to the sun's: the disks are half a degree apart at first contact,
+  // far enough that the flat-sky shortcut would lose an arcsecond of separation
+  // and let the drawn limbs part company with the tangency above.
+  const rho = toRad(separationDeg);
+  const [cosP, sinP] = separationDeg === 0
+    ? [1, 0]
+    : [northDeg / separationDeg, eastDeg / separationDeg];
+  const dec = toRad(sun.declinationDeg);
+  const alongMeridian = Math.cos(dec) * Math.cos(rho) - Math.sin(dec) * Math.sin(rho) * cosP;
+  const declinationDeg = toDeg(Math.asin(
+    Math.sin(dec) * Math.cos(rho) + Math.cos(dec) * Math.sin(rho) * cosP,
+  ));
+  // Right ascension grows eastwards while hour angle shrinks, hence the sign.
+  const ghaDeg = sun.ghaDeg - toDeg(Math.atan2(Math.sin(rho) * sinP, alongMeridian));
+
+  const sky = horizontalPosition(declinationDeg, ghaDeg, latDeg, lonDeg);
+
+  return {
+    ...sky,
+    // Lifted by the sun's refraction rather than by its own. Half a degree apart
+    // and low down, the two bodies are refracted measurably differently — by up
+    // to 8% of the sun's radius as they reach the horizon — so letting each take
+    // its own lift would part the drawn limbs at the very instants the elements
+    // call them tangent. The contact times are airless quantities; the drawing
+    // has to agree with them, and the pair rides up together to do so.
+    apparentAltitudeDeg: sky.altitudeDeg + (sun.apparentAltitudeDeg - sun.altitudeDeg),
+    semiDiameterDeg,
+    separationDeg,
+    obscuration: obscurationOf(sunSemi, semiDiameterDeg, separationDeg),
+  };
 }
 
 function eventAt(el, t, latDeg, lonDeg) {

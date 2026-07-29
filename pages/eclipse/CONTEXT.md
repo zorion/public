@@ -83,3 +83,18 @@ for places whose sun has already set.
 The four instants bounding an eclipse at a Location: C1 first bite, C2 start of
 totality, C3 end of totality, C4 last bite. C2–C3 is the **Totality Window** — the
 span during which the sun must be Visible for the trip to have been worth it.
+
+### Moon Disk
+Where the Moon's disk sits against the sun's, as seen from a Location: the two
+centres' separation, the direction of it, and the Moon's own apparent size. The
+page never shows the Moon anywhere else — away from the sun it is a new moon,
+invisible — so the Moon Disk is a relationship between the two bodies, not a
+position of one. It is derived from the same Besselian elements as the Contact
+Times, and so touches the sun's limb at exactly the C1 the page prints.
+
+### Magnitude / Obscuration
+Two different ways to say how much of the sun is gone, easily confused.
+**Magnitude** is the fraction of the sun's *diameter* covered — the number the
+verdict quotes, and the one eclipse tables print. **Obscuration** is the fraction
+of its *area*, and so the fraction of the light lost: what the panorama's glow
+follows. A 90% magnitude is ~88% obscuration.

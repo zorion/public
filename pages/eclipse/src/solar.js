@@ -58,14 +58,13 @@ export function refractionDeg(altitudeDeg) {
   return 1.02 / Math.tan(toRad(h + 10.3 / (h + 5.11))) / 60;
 }
 
-// Sun as seen from (latDeg, lonDeg east-positive) at msUTC.
-// altitudeDeg is geometric (airless); apparentAltitudeDeg adds refraction.
-// Solar parallax (≤0.0024°) is ignored.
-export function sunPosition(msUTC, latDeg, lonDeg) {
-  const eq = sunEquatorial(msUTC);
-  const H = toRad(normalizeDeg(eq.ghaDeg + lonDeg));
+// Any body's azimuth and elevation from its declination and Greenwich hour
+// angle, as seen from (latDeg, lonDeg east-positive). altitudeDeg is geometric
+// (airless); apparentAltitudeDeg adds this body's own refraction.
+export function horizontalPosition(declinationDeg, ghaDeg, latDeg, lonDeg) {
+  const H = toRad(normalizeDeg(ghaDeg + lonDeg));
   const phi = toRad(latDeg);
-  const dec = toRad(eq.declinationDeg);
+  const dec = toRad(declinationDeg);
 
   const sinAlt = Math.sin(phi) * Math.sin(dec) +
     Math.cos(phi) * Math.cos(dec) * Math.cos(H);
@@ -75,13 +74,21 @@ export function sunPosition(msUTC, latDeg, lonDeg) {
     Math.sin(H),
     Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi),
   );
-  const azimuthDeg = normalizeDeg(toDeg(azFromSouth) + 180);
 
   return {
-    ...eq,
     altitudeDeg,
     apparentAltitudeDeg: altitudeDeg + refractionDeg(altitudeDeg),
-    azimuthDeg,
+    azimuthDeg: normalizeDeg(toDeg(azFromSouth) + 180),
+  };
+}
+
+// Sun as seen from (latDeg, lonDeg east-positive) at msUTC.
+// Solar parallax (≤0.0024°) is ignored.
+export function sunPosition(msUTC, latDeg, lonDeg) {
+  const eq = sunEquatorial(msUTC);
+  return {
+    ...eq,
+    ...horizontalPosition(eq.declinationDeg, eq.ghaDeg, latDeg, lonDeg),
     semiDiameterDeg: SUN_SEMIDIAMETER_1AU_DEG / eq.distanceAU,
   };
 }

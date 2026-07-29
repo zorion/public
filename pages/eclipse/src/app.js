@@ -1,7 +1,7 @@
 // Page wiring: state, skyline orchestration, canvas rendering, verdict.
 
 import { sunPosition } from './solar.js';
-import { localCircumstances } from './eclipse.js';
+import { localCircumstances, moonDisk } from './eclipse.js';
 import { sampleHeight, inCatalonia } from './heights.js';
 import {
   computeSkyline, computeNearField, obstructionAt, sunVisible, EYE_HEIGHT_M,
@@ -20,6 +20,9 @@ const NEAR_FIELD_HALF_WEDGE_DEG = 8;
 const ECLIPSE_DATE = '2026-08-12';
 // Below this the sun is set, and a direction arrow on the map means nothing.
 const SUN_RAY_MIN_ALTITUDE_DEG = -1;
+// How far the drawn corona reaches, in lunar radii. Not a measurement: the real
+// corona fades out over several degrees, far past anything this scale can hold.
+const CORONA_RADII = 3.2;
 
 const PRESETS = [
   { name: 'Barcelona', lat: 41.3874, lon: 2.1686 },
@@ -285,6 +288,39 @@ function renderVerdict() {
 
 // ---------- panorama rendering ----------
 
+// The Moon over the sun, both already in canvas pixels. Its disk is clipped to
+// the sun's, because a new moon against the sky is nothing to look at: what the
+// visitor can actually see is the bite, exactly where it falls.
+function drawMoonOverSun(sun, moon, isTotal) {
+  if (isTotal) {
+    // Nothing else is left to see at totality, and the corona is what tells the
+    // visitor at a glance that this instant is the one they came for. Drawn
+    // first, so the disk below covers its bright centre.
+    ctx.save();
+    ctx.translate(moon.x, moon.y);
+    ctx.scale(moon.rx / moon.ry, 1);
+    const corona = ctx.createRadialGradient(0, 0, moon.ry, 0, 0, moon.ry * CORONA_RADII);
+    corona.addColorStop(0, 'rgba(226,232,255,0.5)');
+    corona.addColorStop(0.3, 'rgba(200,214,255,0.15)');
+    corona.addColorStop(1, 'rgba(180,200,255,0)');
+    ctx.fillStyle = corona;
+    ctx.beginPath();
+    ctx.arc(0, 0, moon.ry * CORONA_RADII, 0, 7);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(sun.x, sun.y, sun.rx, sun.ry, 0, 0, 7);
+  ctx.clip();
+  ctx.fillStyle = '#1b1526';
+  ctx.beginPath();
+  ctx.ellipse(moon.x, moon.y, moon.rx, moon.ry, 0, 0, 7);
+  ctx.fill();
+  ctx.restore();
+}
+
 function renderPanorama() {
   const W = canvas.width;
   const H = canvas.height;
@@ -374,14 +410,24 @@ function renderPanorama() {
     ctx.lineWidth = 1;
   }
 
-  // The sun at the selected instant (drawn before terrain so ridges hide it).
+  // The sun at the selected instant, with the Moon over it (drawn before
+  // terrain so ridges hide both). Same heightM as `state.eclipse` above, so the
+  // limbs meet at exactly the contact times the verdict prints.
   const sunX = xOf(sunSel.azimuthDeg);
   const sunY = yOf(sunSel.apparentAltitudeDeg);
   const rx = (sunSel.semiDiameterDeg / span) * W;
   const ry = (sunSel.semiDiameterDeg / (yMax - yMin)) * H;
   if (sunSel.azimuthDeg >= azLeft && sunSel.azimuthDeg <= azRight) {
+    const moon = moonDisk(msSel, state.lat, state.lon);
+    // The glow stands for the light still getting past the Moon, so it has to go
+    // out as the disk is covered — otherwise totality would be drawn as bright
+    // as noon. It fades with the cube root of what is left, not with the bare
+    // fraction: the eye answers luminance by roughly that power law, and fading
+    // linearly made Barcelona's 99.7% partial — still dazzling, and still the
+    // wrong side of the band's edge — look just like Tarragona's totality.
+    const light = Math.cbrt(1 - (moon?.obscuration ?? 0));
     const glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, ry * 6);
-    glow.addColorStop(0, 'rgba(255,235,170,0.55)');
+    glow.addColorStop(0, `rgba(255,235,170,${0.55 * light})`);
     glow.addColorStop(1, 'rgba(255,235,170,0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
@@ -391,6 +437,18 @@ function renderPanorama() {
     ctx.beginPath();
     ctx.ellipse(sunX, sunY, rx, ry, 0, 0, 7);
     ctx.fill();
+    if (moon) {
+      drawMoonOverSun(
+        { x: sunX, y: sunY, rx, ry },
+        {
+          x: xOf(moon.azimuthDeg),
+          y: yOf(moon.apparentAltitudeDeg),
+          rx: (moon.semiDiameterDeg / span) * W,
+          ry: (moon.semiDiameterDeg / (yMax - yMin)) * H,
+        },
+        moon.obscuration >= 1,
+      );
+    }
   }
 
   // Terrain silhouette.
