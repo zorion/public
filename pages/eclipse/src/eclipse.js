@@ -25,6 +25,10 @@ export const ECLIPSE_2026_08_12 = {
 
 const EARTH_B_OVER_A = 0.99664719;
 
+// `validTdtHours` bounds a clock time of day, while the polynomials are indexed
+// by hours from t0: this reads t back as the clock hour it stands for.
+const tdtHourOfT = (el, t) => (el.t0UtcMs / 3600000) % 24 + t;
+
 function poly(coeffs, t) {
   let v = 0;
   for (let i = coeffs.length - 1; i >= 0; i--) v = v * t + coeffs[i];
@@ -51,7 +55,12 @@ function utcMsOfT(el, t) {
 function observerState(el, t, latDeg, lonDeg, heightM) {
   const dDeg = poly(el.dDeg, t);
   const d = toRad(dDeg);
-  const muDeg = poly(el.muDeg, t);
+  // μ is the Greenwich hour angle of the shadow axis: alone among the elements
+  // it is pinned to Earth's rotation, which follows UT, not the dynamical time
+  // the polynomials are tabulated against. Reading it at the TDT epoch turns
+  // every longitude into an *ephemeris* longitude — 0.298° (24 km here) too far
+  // west, enough to move the band edge across Barcelona.
+  const muDeg = poly(el.muDeg, t - el.deltaTSeconds / 3600);
   const muDot = toRad(polyDeriv(el.muDeg, t)); // rad/h
   const dDot = toRad(polyDeriv(el.dDeg, t)); // rad/h
 
@@ -115,6 +124,28 @@ function findContact(el, latDeg, lonDeg, heightM, useUmbra, sign, tStart) {
     if (Math.abs(tau) < 1e-8) return t;
   }
   return t;
+}
+
+// How deep inside the umbra a location is at its own moment of maximum, in
+// Earth radii: positive within the Band of Totality, negative outside, zero on
+// its edge. Only the sign carries meaning, but it crosses zero smoothly, which
+// is what lets a map interpolate the edge between coarse samples instead of
+// testing every pixel.
+export function totalityMargin(latDeg, lonDeg, heightM = 0, el = ECLIPSE_2026_08_12) {
+  const t = findMaximum(el, latDeg, lonDeg, heightM);
+  // Outside the window the elements cover, the polynomials are extrapolation
+  // rather than ephemeris — and the shadow is nowhere near this location anyway,
+  // so say so plainly instead of trusting a number from beyond their range.
+  const hour = tdtHourOfT(el, t);
+  if (hour < el.validTdtHours[0] || hour > el.validTdtHours[1]) return -1;
+  const s = shadowState(el, t, latDeg, lonDeg, heightM);
+  const insideUmbra = Math.abs(s.L2) - Math.hypot(s.u, s.v);
+  // ζ is how far the observer stands above the fundamental plane, so ζ = 0 is
+  // the sun on the geometric horizon. That is the sunset limit which closes the
+  // eastern end of the band — where the umbra still reaches the ground but only
+  // for places whose sun has already set. Taking the smaller of the two keeps
+  // one continuous field across both kinds of edge.
+  return Math.min(insideUmbra, s.zeta);
 }
 
 function eventAt(el, t, latDeg, lonDeg) {

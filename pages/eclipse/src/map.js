@@ -3,6 +3,7 @@
 // and pointer handling live in mapview.js, the fetching in providers.js.
 
 import { lonLatToTile, tileToLonLat, normalizeDeg } from './geo.js';
+import { positiveRegion } from './contour.js';
 
 // OpenStreetMap standard tiles. Their usage policy covers light,
 // browser-driven traffic like this picker, and requires the attribution the
@@ -129,6 +130,35 @@ export function viewBounds(view) {
     south: se.lat,
     north: nw.lat,
   };
+}
+
+// Where `field(latDeg, lonDeg)` comes out positive, as polygons and outline
+// segments in the view's own pixels — for drawing an area that is defined by a
+// calculation rather than by a boundary anyone has tabulated.
+//
+// Sampling on a pixel grid rather than a geographic one ties the detail to what
+// can actually be seen: the same effort resolves the area to a few pixels
+// whether the view spans a street or a continent. `padFraction` of the viewport
+// is sampled beyond each edge, so a caller can pan that far before re-tracing.
+export function traceFieldOnView(view, field, stepPx, padFraction) {
+  const x0 = -view.widthPx * padFraction;
+  const y0 = -view.heightPx * padFraction;
+  const cols = Math.ceil((view.widthPx - 2 * x0) / stepPx);
+  const rows = Math.ceil((view.heightPx - 2 * y0) / stepPx);
+  const pxOf = (gx, gy) => ({ x: x0 + gx * stepPx, y: y0 + gy * stepPx });
+
+  const values = new Float64Array((cols + 1) * (rows + 1));
+  for (let j = 0; j <= rows; j++) {
+    for (let i = 0; i <= cols; i++) {
+      const p = pxOf(i, j);
+      const c = viewPxToLonLat(view, p.x, p.y);
+      values[j * (cols + 1) + i] = field(c.lat, c.lon);
+    }
+  }
+
+  const { fills, edges } = positiveRegion(values, cols, rows);
+  const toPx = v => pxOf(v.x, v.y);
+  return { fills: fills.map(poly => poly.map(toPx)), edges: edges.map(seg => seg.map(toPx)) };
 }
 
 // Forward-geocoding URL. The current viewport is passed as `viewbox` to bias

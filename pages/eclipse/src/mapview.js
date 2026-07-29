@@ -1,13 +1,16 @@
 // The location picker: an OpenStreetMap slippy map on a canvas, with
-// drag-to-pan, wheel/pinch zoom, click-to-choose and place-name search.
+// drag-to-pan, wheel/pinch zoom, click-to-choose and place-name search, and the
+// Band of Totality shaded over it so a visitor can see which side of the edge
+// they are choosing.
 // All view math comes from map.js; tile loading and geocoding are injected, so
 // this module owns nothing but the DOM.
 
 import {
   OSM_TILE, makeView, resizeView, centerOn, panView, zoomView,
-  visibleTiles, lonLatToViewPx, viewPxToLonLat,
+  visibleTiles, lonLatToViewPx, viewPxToLonLat, traceFieldOnView,
 } from './map.js';
 import { destinationPoint, metersPerPixel } from './geo.js';
+import { totalityMargin } from './eclipse.js';
 
 const DEFAULT_ZOOM = 13;
 // Pointer travel below this still counts as a click rather than a pan.
@@ -26,6 +29,19 @@ const SCALE_BAR_STEPS_M = [
 ];
 // Nominatim asks for at most one request per second.
 const SEARCH_MIN_INTERVAL_MS = 1100;
+// Spacing of the samples the Band of Totality is traced from. In screen pixels,
+// so the band is resolved to a few pixels at every zoom: coarse enough to be
+// cheap when a whole continent is in view, fine enough that at street level the
+// drawn edge cannot disagree with the verdict for the marker beside it.
+const BAND_SAMPLE_PX = 16;
+// How far beyond the viewport the samples reach, as a fraction of it. Panning
+// within that margin reuses them, so a drag only costs a redraw.
+const BAND_PAD_FRACTION = 0.3;
+// The umbra is a shadow, so it reads as a dark wash — kept light enough that
+// street names stay legible under it, with the edge picked out separately
+// because the edge is the part anyone needs to see exactly.
+const BAND_FILL = 'rgba(26, 22, 66, 0.24)';
+const BAND_EDGE = '#cbb8ff';
 
 export function createMapPicker({
   canvas, searchInput, searchButton, resultsList, statusEl,
@@ -38,6 +54,8 @@ export function createMapPicker({
   let sunAzimuthDeg = null;
   let drawQueued = false;
   let lastSearchMs = -Infinity;
+  // The traced Band of Totality, held in the pixel frame it was sampled in.
+  let band = null;
 
   // ---------- drawing ----------
 
@@ -86,9 +104,93 @@ export function createMapPicker({
 
     for (const t of visibleTiles(view)) drawTile(t);
 
+    drawTotalityBand();
     drawSunRay();
     drawMarker();
     drawScaleBar();
+  }
+
+  // ---------- the Band of Totality ----------
+
+  // Within one zoom level a mercator pan is a plain pixel translation, so the
+  // traced band is kept in the pixel frame it was sampled in and moved by a
+  // single offset per frame. Re-tracing is only needed once the view has zoomed,
+  // been resized, or slid past the sampled margin.
+  function bandOffset() {
+    const anchor = lonLatToViewPx(view, band.lat, band.lon);
+    return { dx: anchor.x - band.widthPx / 2, dy: anchor.y - band.heightPx / 2 };
+  }
+
+  function bandStale() {
+    if (!band) return true;
+    if (band.zoom !== view.zoom) return true;
+    if (band.widthPx !== view.widthPx || band.heightPx !== view.heightPx) return true;
+    const { dx, dy } = bandOffset();
+    return Math.abs(dx) > view.widthPx * BAND_PAD_FRACTION ||
+      Math.abs(dy) > view.heightPx * BAND_PAD_FRACTION;
+  }
+
+  function traceBand() {
+    const traced = traceFieldOnView(view, totalityMargin, BAND_SAMPLE_PX, BAND_PAD_FRACTION);
+    band = {
+      zoom: view.zoom, widthPx: view.widthPx, heightPx: view.heightPx,
+      lat: view.lat, lon: view.lon, ...traced,
+    };
+  }
+
+  function drawTotalityBand() {
+    if (bandStale()) traceBand();
+    if (!band.fills.length) return;
+    const { dx, dy } = bandOffset();
+
+    ctx.save();
+    // Every cell goes into one path: shared borders cancel under the non-zero
+    // fill rule, so the band comes out evenly shaded rather than showing the
+    // sampling grid as seams.
+    ctx.beginPath();
+    for (const poly of band.fills) {
+      ctx.moveTo(poly[0].x + dx, poly[0].y + dy);
+      for (let i = 1; i < poly.length; i++) ctx.lineTo(poly[i].x + dx, poly[i].y + dy);
+      ctx.closePath();
+    }
+    ctx.fillStyle = BAND_FILL;
+    ctx.fill();
+
+    ctx.beginPath();
+    for (const [a, b] of band.edges) {
+      ctx.moveTo(a.x + dx, a.y + dy);
+      ctx.lineTo(b.x + dx, b.y + dy);
+    }
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.stroke();
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = BAND_EDGE;
+    ctx.stroke();
+    ctx.restore();
+
+    drawBandLegend();
+  }
+
+  // Zoomed right in, the whole map can be inside the band with no edge in sight;
+  // the wash alone would just look like a tinted basemap, so it gets a label.
+  function drawBandLegend() {
+    const x = 12;
+    const y = 12;
+    ctx.save();
+    ctx.fillStyle = BAND_FILL;
+    ctx.fillRect(x, y, 13, 13);
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = BAND_EDGE;
+    ctx.strokeRect(x + 0.5, y + 0.5, 12, 12);
+    ctx.font = '600 11px system-ui, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.strokeText('Franja de totalidad', x + 19, y + 1);
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Franja de totalidad', x + 19, y + 1);
+    ctx.restore();
   }
 
   function drawTile(t) {

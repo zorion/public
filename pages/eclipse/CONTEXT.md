@@ -12,8 +12,9 @@ finding one, never part of it, and nothing downstream knows the name of anywhere
 The basemap beside the controls, there so a visitor can choose a Location without
 leaving the page for an external map. Panning, zooming and clicking it are the only
 map interactions; a name search resolves a typed place to coordinates. The Picker
-answers "where am I pointing?" and nothing else — the Skyline and the verdict are
-still computed purely from the resulting coordinates.
+answers "where am I pointing?", and shades the Band of Totality so that the question
+gets asked of the right places — the Skyline and the verdict are still computed purely
+from the resulting coordinates.
 
 ### Sun Path
 The sequence of sun positions (azimuth + elevation) over one calendar day at a
@@ -69,6 +70,14 @@ beside a building must not put your eyes on its roof.
 The eclipse as experienced at one specific Location: the contact times, whether the
 Location lies inside the band of totality, and the duration of totality there. These
 differ meaningfully across Catalonia.
+
+### Band of Totality
+The strip of ground the Moon's umbra sweeps: inside it the eclipse becomes total,
+outside it stays partial however little is missing. Which side of its edge a Location
+falls on is not something a visitor can guess — over Catalonia that edge runs between
+Lleida and Barcelona — so the Picker shades it. Its eastern end is closed by sunset
+rather than by the umbra leaving the ground: further east the shadow still arrives, but
+for places whose sun has already set.
 
 ### Contact Times (C1–C4)
 The four instants bounding an eclipse at a Location: C1 first bite, C2 start of
