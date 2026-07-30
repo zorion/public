@@ -4,6 +4,7 @@
 
 import { lonLatToTile, tileToLonLat, normalizeDeg } from './geo.js';
 import { positiveRegion } from './contour.js';
+import { DEFAULT_LANG } from './i18n.js';
 
 // OpenStreetMap standard tiles. Their usage policy covers light,
 // browser-driven traffic like this picker, and requires the attribution the
@@ -163,14 +164,15 @@ export function traceFieldOnView(view, field, stepPx, padFraction) {
 
 // Forward-geocoding URL. The current viewport is passed as `viewbox` to bias
 // ranking without excluding anything: unbiased, "Montsec" answers with a
-// village in France long before the Catalan range.
-export function geocodeUrl(query, view = null) {
+// village in France long before the Catalan range. `lang` only picks which of
+// Nominatim's names comes back, never which places do.
+export function geocodeUrl(query, view = null, lang = DEFAULT_LANG) {
   const params = new URLSearchParams({
     q: query,
     format: 'jsonv2',
     limit: String(GEOCODE_LIMIT),
   });
-  params.set('accept-language', 'es');
+  params.set('accept-language', lang);
   if (view) {
     const b = viewBounds(view);
     const r = v => v.toFixed(4);

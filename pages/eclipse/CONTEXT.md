@@ -8,6 +8,14 @@ browser geolocation, manual lat/lon entry, a preset city, a click on the Picker,
 Picker name search. A Location is still only coordinates: place names are an input to
 finding one, never part of it, and nothing downstream knows the name of anywhere.
 
+### Language
+Which language the page's own words are in: Spanish by default, Catalan on request,
+carried in the shareable URL beside the Location. It picks the wording, the locale
+clock readings are formatted with, and the language a Picker name search answers in.
+It never changes what is computed — two visitors on the same Location get the same
+verdict — and place names are not part of it: a Preset, a geocoder answer and a
+compass point read the same either way.
+
 ### Picker
 The basemap beside the controls, there so a visitor can choose a Location without
 leaving the page for an external map. Panning, zooming and clicking it are the only

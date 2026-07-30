@@ -12,6 +12,7 @@ import { destinationPoint } from './geo.js';
 import { parseShareParams, shareQuery } from './share.js';
 import { OSM_TILE } from './map.js';
 import { createMapPicker } from './mapview.js';
+import { LANGS, DEFAULT_LANG, localeOf, translate } from './i18n.js';
 
 const AZ_MIN = 230;
 const AZ_MAX = 330;
@@ -40,7 +41,7 @@ const $ = id => document.getElementById(id);
 const canvas = $('panorama');
 const ctx = canvas.getContext('2d');
 
-const loadGrid = makeGridLoader(n => setStatus(`Descargando relieve… ${n} teselas`));
+const loadGrid = makeGridLoader(n => setStatus(t('status.tiles', { n })));
 const sampleSurface = makeSurfaceSampler();
 const tileSource = makeTileImageSource(OSM_TILE);
 let picker = null;
@@ -49,6 +50,7 @@ const state = {
   lat: PRESETS[0].lat,
   lon: PRESETS[0].lon,
   extraHeightM: 0,
+  lang: DEFAULT_LANG,
   dateStr: ECLIPSE_DATE,
   // Seconds, not minutes: contact times land mid-minute and totality lasts
   // ~90 s, so rounding C2 to its minute can miss totality altogether.
@@ -62,6 +64,96 @@ const state = {
   computeToken: 0,
 };
 
+// ---------- language ----------
+
+// Read through `state` on every call, so switching language needs no rebuilding
+// of anything that holds a translator.
+const t = (key, params) => translate(state.lang, key, params);
+
+// index.html carries the Spanish original for the first paint; these attributes
+// say which message replaces it. `data-i18n` sets textContent, `data-i18n-html`
+// innerHTML, and any other suffix the attribute of that (kebab-cased) name.
+const I18N_SELECTOR = '[data-i18n],[data-i18n-html],[data-i18n-title],'
+  + '[data-i18n-placeholder],[data-i18n-aria-label]';
+const I18N_PREFIX = 'i18n';
+
+const kebab = s => s.replace(/[A-Z]/g, c => `-${c.toLowerCase()}`).replace(/^-/, '');
+
+// Everything whose wording is fixed for the session but for the language: the
+// static markup, the tab title, and the two lists app.js builds itself.
+function applyLanguage() {
+  document.documentElement.lang = state.lang;
+  document.title = t('page.title');
+
+  for (const el of document.querySelectorAll(I18N_SELECTOR)) {
+    for (const [dataKey, msgKey] of Object.entries(el.dataset)) {
+      if (!dataKey.startsWith(I18N_PREFIX)) continue;
+      const target = dataKey.slice(I18N_PREFIX.length);
+      if (target === '') el.textContent = t(msgKey);
+      else if (target === 'Html') el.innerHTML = t(msgKey);
+      else el.setAttribute(kebab(target), t(msgKey));
+    }
+  }
+
+  renderPresetOptions();
+  syncLangLinks();
+  $('tz-note').textContent =
+    t('time.tzNote', { tz: Intl.DateTimeFormat().resolvedOptions().timeZone });
+}
+
+// Place names are never translated, so only the "no preset" entry changes — but
+// rebuilding the list drops the selection, which has to be put back.
+function renderPresetOptions() {
+  const sel = $('preset');
+  const chosen = sel.value;
+  sel.innerHTML = `<option value="-1">${t('preset.custom')}</option>` +
+    PRESETS.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+  if (chosen) sel.value = chosen;
+}
+
+// Links rather than a <select>, so each language is a real URL a visitor can
+// share or bookmark. The click is intercepted all the same: re-translating in
+// place is instant, where a reload would re-fetch every elevation tile for a
+// spot whose skyline is already computed.
+function initLangSwitch() {
+  $('lang-switch').append(...LANGS.map(({ code, name }) => {
+    const a = document.createElement('a');
+    a.textContent = name;
+    a.hreflang = code;
+    a.dataset.lang = code;
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      setLang(code);
+    });
+    return a;
+  }));
+}
+
+// Each link points at the current spot in its own language, so following one is
+// the same page rather than a reset to Barcelona.
+function syncLangLinks() {
+  for (const a of $('lang-switch').children) {
+    const code = a.dataset.lang;
+    a.href = `${location.pathname}?${shareQuery({ ...state, lang: code })}`;
+    if (code === state.lang) a.setAttribute('aria-current', 'true');
+    else a.removeAttribute('aria-current');
+  }
+}
+
+function setLang(lang) {
+  if (lang === state.lang) return;
+  state.lang = lang;
+  syncUrl();
+  applyLanguage();
+  // Transient text answers a request already served in the old language;
+  // clearing it beats leaving it on screen in the wrong one.
+  setStatus('');
+  $('readout').textContent = '';
+  $('place-status').textContent = '';
+  renderAll();
+  picker?.refresh();
+}
+
 // ---------- time helpers (everything shown in the browser's timezone) ----------
 
 function selectedUtcMs() {
@@ -70,7 +162,7 @@ function selectedUtcMs() {
 }
 
 function fmtTime(ms, withSeconds = false) {
-  return new Date(ms).toLocaleTimeString('es-ES', {
+  return new Date(ms).toLocaleTimeString(localeOf(state.lang), {
     hour: '2-digit', minute: '2-digit', ...(withSeconds ? { second: '2-digit' } : {}),
   });
 }
@@ -97,13 +189,13 @@ async function recomputeLocation() {
   state.eclipse = localCircumstances(lat, lon);
   renderAll();
 
-  setStatus('Buscando la elevación del terreno…');
+  setStatus(t('status.groundElevation'));
   const ground = await sampleHeight(loadGrid, lat, lon, 0);
   if (token !== state.computeToken) return;
   state.groundElevM = ground ?? 0;
   state.eyeElevM = state.groundElevM + EYE_HEIGHT_M + state.extraHeightM;
 
-  setStatus('Calculando el horizonte de terreno…');
+  setStatus(t('status.terrainHorizon'));
   const guard = async (la, lo, d) => {
     if (token !== state.computeToken) throw new Error('stale');
     return sampleHeight(loadGrid, la, lo, d);
@@ -141,12 +233,14 @@ async function recomputeNearField(token) {
       points.push(p);
     }
   }
-  setStatus('Consultando edificios y vegetación (modelo 1 m)…');
+  setStatus(t('status.surface'));
   const BATCH = 12;
   for (let i = 0; i < points.length; i += BATCH) {
     if (token !== state.computeToken) return;
     await Promise.all(points.slice(i, i + BATCH).map(p => sampleSurface(p.lat, p.lon)));
-    setStatus(`Consultando edificios y vegetación… ${Math.min(i + BATCH, points.length)}/${points.length}`);
+    setStatus(t('status.surfaceProgress', {
+      done: Math.min(i + BATCH, points.length), total: points.length,
+    }));
   }
   if (token !== state.computeToken) return;
   state.nearField = await computeNearField({
@@ -165,14 +259,16 @@ function visibilityOf(event) {
 }
 
 // Visibility is three-valued: until this Location's skyline has arrived it is
-// *unknown*, which must never be worded or coloured as "oculto" — the terrain
+// *unknown*, which must never be worded or coloured as "occluded" — the terrain
 // that would hide the sun is not drawn yet either, so a red verdict at this
 // point contradicts the panorama right below it.
-const PENDING_HORIZON = '<span class="pending">Comprobando el relieve del horizonte…</span>';
+const pendingHorizon = () => `<span class="pending">${t('verdict.pendingHorizon')}</span>`;
 
 function visLabel(v) {
-  if (v === null) return '<span class="pending" title="Comprobando el relieve…">…</span>';
-  return v ? '<strong class="good">visible</strong>' : '<strong class="bad">oculto</strong>';
+  if (v === null) return `<span class="pending" title="${t('verdict.pendingShort')}">…</span>`;
+  return v
+    ? `<strong class="good">${t('verdict.visible')}</strong>`
+    : `<strong class="bad">${t('verdict.occluded')}</strong>`;
 }
 
 // Last moment of the selected day when the sun's upper limb clears the local
@@ -196,7 +292,7 @@ function effectiveSunsetMs() {
 // sun to be, so each one is a control that moves the timeline there.
 function atTime(utcMs, withSeconds = false) {
   return `<button type="button" class="at-time" data-utc-ms="${utcMs}"
-    title="Llevar la línea de tiempo a esta hora">${fmtTime(utcMs, withSeconds)}</button>`;
+    title="${t('verdict.atTimeHint')}">${fmtTime(utcMs, withSeconds)}</button>`;
 }
 
 function renderVerdict() {
@@ -205,40 +301,41 @@ function renderVerdict() {
   const isEclipseDay = state.dateStr === ECLIPSE_DATE;
   const skylineKnown = state.terrainSkyline !== null;
   const sunset = effectiveSunsetMs();
-  const sunsetLine = sunset
-    ? `Ocaso tras el horizonte local: <strong>${atTime(sunset)}</strong>.`
-    : '';
+  const sunsetLine = sunset ? t('verdict.localSunset', { time: atTime(sunset) }) : '';
 
   if (!isEclipseDay) {
     const s = sunPosition(selectedUtcMs(), state.lat, state.lon);
-    const where = `Sol a las ${fmtTime(selectedUtcMs(), state.secondOfDay % 60 !== 0)}: altura ${s.apparentAltitudeDeg.toFixed(1)}°,
-      acimut ${s.azimuthDeg.toFixed(1)}°`;
+    const where = t('verdict.sunAt', {
+      time: fmtTime(selectedUtcMs(), state.secondOfDay % 60 !== 0),
+      altitude: s.apparentAltitudeDeg.toFixed(1),
+      azimuth: s.azimuthDeg.toFixed(1),
+    });
     el.className = 'panel';
     el.innerHTML = skylineKnown
       ? `${where} — ${visLabel(visibilityOf(s))}. ${sunsetLine}`
-      : `${where}. ${PENDING_HORIZON}`;
+      : `${where}. ${pendingHorizon()}`;
     return;
   }
 
   // Not computed yet is not the same as "not visible from here".
   if (!lc) {
     el.className = 'panel';
-    el.innerHTML = PENDING_HORIZON;
+    el.innerHTML = pendingHorizon();
     return;
   }
 
   if (!lc.visible) {
     el.className = 'panel bad';
-    el.textContent = 'El eclipse del 12 de agosto de 2026 no es visible desde este punto.';
+    el.textContent = t('verdict.notVisibleHere');
     return;
   }
 
   const rows = [
-    ['C1 — primer contacto', lc.c1],
-    ['C2 — inicio totalidad', lc.c2],
-    ['Máximo', lc.max],
-    ['C3 — fin totalidad', lc.c3],
-    ['C4 — último contacto', lc.c4],
+    [t('verdict.c1'), lc.c1],
+    [t('verdict.c2'), lc.c2],
+    [t('verdict.max'), lc.max],
+    [t('verdict.c3'), lc.c3],
+    [t('verdict.c4'), lc.c4],
   ].filter(([, e]) => e).map(([label, e]) => {
     const v = visibilityOf(e);
     return `<tr><th>${label}</th><td>${atTime(e.utcMs, true)}</td>
@@ -249,41 +346,39 @@ function renderVerdict() {
   if (lc.isTotal) {
     const v2 = visibilityOf(lc.c2);
     const v3 = visibilityOf(lc.c3);
-    const dur = Math.round(lc.totalityDurationS);
+    const seconds = Math.round(lc.totalityDurationS);
     if (!skylineKnown) {
       el.className = 'panel';
-      headline = `Aquí la totalidad dura <strong>${dur} s</strong>. ${PENDING_HORIZON}`;
+      headline = `${t('verdict.totalityDuration', { seconds })} ${pendingHorizon()}`;
     } else if (v2 && v3) {
       el.className = 'panel good';
-      headline = `<strong class="good">ECLIPSE TOTAL VISIBLE</strong> desde aquí —
-        totalidad de ${dur} s por encima del horizonte local.`;
+      headline = t('verdict.totalVisible', { seconds });
     } else if (v2 || v3) {
       el.className = 'panel bad';
-      headline = `<strong class="bad">Totalidad solo parcialmente visible</strong>:
-        el relieve oculta parte de los ${dur} s de totalidad.`;
+      headline = t('verdict.totalPartly', { seconds });
     } else {
       el.className = 'panel bad';
-      headline = `<strong class="bad">Totalidad OCULTA tras el relieve</strong>
-        (duraría ${dur} s con horizonte despejado).`;
+      headline = t('verdict.totalHidden', { seconds });
     }
   } else {
     el.className = 'panel';
-    headline = `Aquí el eclipse será <strong>parcial</strong> (magnitud
-      ${(lc.magnitude * 100).toFixed(1)}%): la franja de totalidad queda fuera de este punto.
-      Máximo a las ${atTime(lc.max.utcMs, true)}` +
-      (skylineKnown ? `, ${visLabel(visibilityOf(lc.max))}.` : `. ${PENDING_HORIZON}`);
+    headline = t('verdict.partial', {
+      magnitude: (lc.magnitude * 100).toFixed(1),
+      time: atTime(lc.max.utcMs, true),
+    }) + (skylineKnown ? `, ${visLabel(visibilityOf(lc.max))}.` : `. ${pendingHorizon()}`);
   }
 
   // One pending message at a time: while the terrain horizon is still unknown,
   // saying buildings have not been queried yet adds noise, not information.
   const nfNote = !skylineKnown || state.nearField
     ? ''
-    : (inCatalonia(state.lat, state.lon)
-      ? '<p class="note">Edificios aún no consultados…</p>'
-      : '<p class="note">Fuera de Cataluña: solo relieve del terreno, sin edificios.</p>');
+    : `<p class="note">${inCatalonia(state.lat, state.lon)
+      ? t('verdict.buildingsPending')
+      : t('verdict.outsideCatalonia')}</p>`;
 
-  el.innerHTML = `${headline}<table><tr><th></th><th>Hora</th><th>Altura</th><th></th></tr>${rows}</table>
-    <p class="note">${sunsetLine}</p>${nfNote}`;
+  el.innerHTML = `${headline}<table>
+    <tr><th></th><th>${t('verdict.colTime')}</th><th>${t('verdict.colAltitude')}</th><th></th></tr>
+    ${rows}</table><p class="note">${sunsetLine}</p>${nfNote}`;
 }
 
 // ---------- panorama rendering ----------
@@ -508,9 +603,11 @@ function renderAll() {
 
 // ---------- controls ----------
 
-// Keep the address bar shareable: it always encodes the current spot.
+// Keep the address bar shareable: it always encodes the current spot and, when
+// it is not the default, the language.
 function syncUrl() {
   history.replaceState(null, '', `${location.pathname}?${shareQuery(state)}`);
+  syncLangLinks();
 }
 
 // `recenterMap: false` is for picks that came from the map itself — the view is
@@ -536,7 +633,9 @@ function initMap() {
     zoomInButton: $('zoom-in'),
     zoomOutButton: $('zoom-out'),
     tileSource,
-    geocode,
+    // The picker asks for names in whatever language the page is currently in.
+    geocode: (query, view) => geocode(query, view, state.lang),
+    t,
     onPick: (lat, lon) => setLocation(lat, lon, { recenterMap: false }),
   });
 }
@@ -562,22 +661,22 @@ function syncTimeUI() {
 // it too, so an instant that falls on another day in the browser's timezone
 // still shows the right sun.
 function setInstant(utcMs) {
-  const t = new Date(utcMs);
-  state.dateStr = `${t.getFullYear()}-${pad2(t.getMonth() + 1)}-${pad2(t.getDate())}`;
-  state.secondOfDay = t.getHours() * 3600 + t.getMinutes() * 60 + t.getSeconds();
+  const at = new Date(utcMs);
+  state.dateStr = `${at.getFullYear()}-${pad2(at.getMonth() + 1)}-${pad2(at.getDate())}`;
+  state.secondOfDay = at.getHours() * 3600 + at.getMinutes() * 60 + at.getSeconds();
   $('date').value = state.dateStr;
   syncTimeUI();
   renderAll();
 }
 
 function initControls() {
+  // The options themselves are built by applyLanguage, which runs before this
+  // list is ever selectable.
   const sel = $('preset');
-  sel.innerHTML = '<option value="-1">— personalizado —</option>' +
-    PRESETS.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
   sel.addEventListener('change', () => {
     const p = PRESETS[Number(sel.value)];
-    // "— personalizado —" names no place: it is a request to choose one, so
-    // open the map rather than leaving the visitor on an unchanged page.
+    // The "custom" entry names no place: it is a request to choose one, so open
+    // the map rather than leaving the visitor on an unchanged page.
     if (p) setLocation(p.lat, p.lon, { presetIndex: Number(sel.value) });
     else openPicker();
   });
@@ -595,10 +694,10 @@ function initControls() {
   });
 
   $('geolocate').addEventListener('click', () => {
-    setStatus('Pidiendo tu ubicación…');
+    setStatus(t('status.geolocating'));
     navigator.geolocation.getCurrentPosition(
       pos => setLocation(pos.coords.latitude, pos.coords.longitude),
-      () => setStatus('No se pudo obtener la ubicación.'),
+      () => setStatus(t('status.geolocateFailed')),
       { enableHighAccuracy: true, timeout: 10000 },
     );
   });
@@ -657,19 +756,21 @@ function initControls() {
       if (Math.abs(a.azimuthDeg - az) <= AZ_STEP / 2) { ridge = a.ridgeDistanceM; break; }
     }
     $('readout').textContent = limit === null ? '' :
-      `Acimut ${az.toFixed(1)}° — horizonte a ${limit.toFixed(2)}°` +
-      (ridge ? ` (cresta a ${(ridge / 1000).toFixed(1)} km)` : '');
+      t('readout.azimuth', { azimuth: az.toFixed(1), elevation: limit.toFixed(2) }) +
+      (ridge ? t('readout.ridge', { km: (ridge / 1000).toFixed(1) }) : '');
   });
   canvas.addEventListener('pointerup', () => { dragging = null; });
-
-  $('tz-note').textContent =
-    `Todas las horas en tu zona horaria: ${Intl.DateTimeFormat().resolvedOptions().timeZone}.`;
 }
 
-initMap();
-initControls();
-syncTimeUI();
 const shared = parseShareParams(location.search);
+state.lang = shared.lang;
+
+initMap();
+initLangSwitch();
+initControls();
+// Before the first render, so a Catalan visitor never sees the Spanish markup.
+applyLanguage();
+syncTimeUI();
 if (shared.lat !== null) {
   state.extraHeightM = shared.extraHeightM;
   $('height').value = String(shared.extraHeightM);

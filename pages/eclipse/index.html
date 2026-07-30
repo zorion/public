@@ -103,88 +103,104 @@
     position: absolute; width: 1px; height: 1px; overflow: hidden;
     clip-path: inset(50%); white-space: nowrap;
   }
+  /* Language switcher: pills beside the title, current one filled in. */
+  .page-head { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: flex-start; justify-content: space-between; }
+  #lang-switch { display: flex; gap: 0.4rem; flex-shrink: 0; }
+  #lang-switch a {
+    font-size: 0.78rem; color: var(--dim); text-decoration: none; white-space: nowrap;
+    border: 1px solid var(--line); border-radius: 999px; padding: 0.15rem 0.65rem;
+  }
+  #lang-switch a:hover { border-color: var(--accent); color: var(--text); }
+  #lang-switch a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #lang-switch a[aria-current="true"] { background: var(--dim); border-color: var(--dim); color: var(--bg); }
   @media (max-width: 30rem) { #picker { height: 16rem; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>Sol y horizonte
-    <small>¿Quedará el sol por encima del relieve? Pensado para el eclipse total del 12 de agosto de 2026 en Cataluña.</small>
-  </h1>
+  <!-- The Spanish below is the default language and the first paint. Every
+       string carrying a data-i18n* attribute is replaced from src/i18n.js once
+       the module loads, which is what a non-default language swaps in. -->
+  <header class="page-head">
+    <h1><span data-i18n="page.h1">Sol y horizonte</span>
+      <small data-i18n="page.tagline">¿Quedará el sol por encima del relieve? Pensado para el eclipse total del 12 de agosto de 2026 en Cataluña.</small>
+    </h1>
+    <nav id="lang-switch" aria-label="Idioma" data-i18n-aria-label="lang.nav"></nav>
+  </header>
 
-  <section class="panel controls" aria-label="Lugar">
+  <section class="panel controls" aria-label="Lugar" data-i18n-aria-label="place.section">
     <div class="field">
-      <label for="preset">Lugar</label>
+      <label for="preset" data-i18n="place.field">Lugar</label>
       <select id="preset"></select>
     </div>
     <div class="field">
-      <label for="lat">Latitud</label>
+      <label for="lat" data-i18n="place.lat">Latitud</label>
       <input id="lat" type="number" step="0.0001" min="-90" max="90">
     </div>
     <div class="field">
-      <label for="lon">Longitud</label>
+      <label for="lon" data-i18n="place.lon">Longitud</label>
       <input id="lon" type="number" step="0.0001" min="-180" max="180">
     </div>
     <div class="field">
-      <label for="height">Altura sobre el suelo (m)</label>
-      <input id="height" type="number" step="1" min="0" max="500" value="0" title="Si estarás en una azotea o terraza, pon aquí su altura">
+      <label for="height" data-i18n="place.height">Altura sobre el suelo (m)</label>
+      <input id="height" type="number" step="1" min="0" max="500" value="0" data-i18n-title="place.heightHint" title="Si estarás en una azotea o terraza, pon aquí su altura">
     </div>
-    <button id="geolocate">📍 Mi ubicación</button>
+    <button id="geolocate" data-i18n="place.geolocate">📍 Mi ubicación</button>
   </section>
 
   <details class="panel" id="map-panel">
-    <summary>🗺️ Elegir el punto en un mapa</summary>
+    <summary data-i18n="map.summary">🗺️ Elegir el punto en un mapa</summary>
     <div class="map-body">
       <div class="search">
-        <label class="sr-only" for="place">Buscar un lugar por su nombre</label>
-        <input id="place" type="search" autocomplete="off" placeholder="Buscar un lugar: Àger, Montsec, Tibidabo…">
-        <button id="place-go">Buscar</button>
+        <label class="sr-only" for="place" data-i18n="map.searchLabel">Buscar un lugar por su nombre</label>
+        <input id="place" type="search" autocomplete="off" data-i18n-placeholder="map.searchPlaceholder" placeholder="Buscar un lugar: Àger, Montsec, Tibidabo…">
+        <button id="place-go" data-i18n="map.searchButton">Buscar</button>
       </div>
       <ul id="place-results" hidden></ul>
       <p id="place-status" class="note" aria-live="polite"></p>
       <div class="map-wrap">
-        <canvas id="picker" tabindex="0" role="application"
+        <canvas id="picker" tabindex="0" role="application" data-i18n-aria-label="map.pickerAria"
           aria-label="Mapa. Haz clic para elegir el punto de observación; flechas para desplazar, + y − para acercar, Intro para elegir el centro."></canvas>
         <div class="map-zoom">
-          <button id="zoom-in" type="button" aria-label="Acercar">+</button>
-          <button id="zoom-out" type="button" aria-label="Alejar">−</button>
+          <button id="zoom-in" type="button" aria-label="Acercar" data-i18n-aria-label="map.zoomIn">+</button>
+          <button id="zoom-out" type="button" aria-label="Alejar" data-i18n-aria-label="map.zoomOut">−</button>
         </div>
       </div>
-      <p class="note">Haz clic en el mapa para elegir el punto: arrastra para desplazarte y usa la rueda o dos
+      <p class="note" data-i18n="map.notePick">Haz clic en el mapa para elegir el punto: arrastra para desplazarte y usa la rueda o dos
         dedos para acercar. La línea naranja apunta a donde estará el sol a la hora seleccionada — es la
         dirección que tiene que estar despejada.</p>
-      <p class="note">La zona sombreada es la <strong>franja de totalidad</strong>: dentro el eclipse llega a ser
+      <p class="note" data-i18n-html="map.noteBand">La zona sombreada es la <strong>franja de totalidad</strong>: dentro el eclipse llega a ser
         total, fuera se queda en parcial por poco que falte. El borde pasa entre Lleida y Barcelona, así que
         aleja el mapa para ver de qué lado cae tu punto.</p>
     </div>
   </details>
 
-  <section class="panel" aria-label="Fecha y hora">
+  <section class="panel" aria-label="Fecha y hora" data-i18n-aria-label="time.section">
     <div class="timeline">
       <div class="field">
-        <label for="date">Fecha</label>
+        <label for="date" data-i18n="time.date">Fecha</label>
         <input id="date" type="date" value="2026-08-12">
       </div>
       <input id="time" type="range" min="0" max="1439" step="1">
       <span id="time-label">20:29</span>
-      <button id="now">Ahora</button>
-      <button id="eclipse-btn" class="primary">◉ Eclipse</button>
+      <button id="now" data-i18n="time.now">Ahora</button>
+      <button id="eclipse-btn" class="primary" data-i18n="time.eclipse">◉ Eclipse</button>
     </div>
     <p class="note" id="tz-note"></p>
   </section>
 
-  <section class="panel" id="verdict" aria-live="polite">Calculando…</section>
+  <section class="panel" id="verdict" aria-live="polite" data-i18n="verdict.calculating">Calculando…</section>
 
   <section class="panel">
     <canvas id="panorama" width="1600" height="640"></canvas>
     <p id="readout"></p>
     <p id="status"></p>
-    <p class="note">Horizonte calculado con relieve real (curvatura terrestre y refracción incluidas).
+    <p class="note" data-i18n-html="panorama.note">Horizonte calculado con relieve real (curvatura terrestre y refracción incluidas).
       Dentro de Cataluña se añaden edificios y vegetación (modelo de superficies de 1&nbsp;m) en el
       sector por donde se pondrá el sol. Fuera de ese sector, solo relieve del terreno.</p>
   </section>
 
-  <footer class="panel">
+  <footer class="panel" data-i18n-html="footer.credits">
     Datos de elevaciones: <a href="https://www.icgc.cat/">Institut Cartogràfic i Geològic de Catalunya</a>
     (CC&nbsp;BY&nbsp;4.0) · Fuera de Cataluña: <a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles</a>
     (EU-DEM, © Unión Europea) · Elementos besselianos del eclipse: NASA/GSFC (F.&nbsp;Espenak) ·

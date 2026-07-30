@@ -2,8 +2,8 @@
 // drag-to-pan, wheel/pinch zoom, click-to-choose and place-name search, and the
 // Band of Totality shaded over it so a visitor can see which side of the edge
 // they are choosing.
-// All view math comes from map.js; tile loading and geocoding are injected, so
-// this module owns nothing but the DOM.
+// All view math comes from map.js; tile loading, geocoding and the translator
+// are injected, so this module owns nothing but the DOM.
 
 import {
   OSM_TILE, makeView, resizeView, centerOn, panView, zoomView,
@@ -43,10 +43,12 @@ const BAND_PAD_FRACTION = 0.3;
 const BAND_FILL = 'rgba(26, 22, 66, 0.24)';
 const BAND_EDGE = '#cbb8ff';
 
+// `t` is read on every use rather than snapshotted, so a language change takes
+// effect here without rebuilding the picker.
 export function createMapPicker({
   canvas, searchInput, searchButton, resultsList, statusEl,
   zoomInButton, zoomOutButton,
-  tileSource, geocode, onPick,
+  tileSource, geocode, t, onPick,
 }) {
   const ctx = canvas.getContext('2d');
   let view = makeView({ lat: 0, lon: 0, zoom: DEFAULT_ZOOM, widthPx: 1, heightPx: 1 });
@@ -177,6 +179,7 @@ export function createMapPicker({
   function drawBandLegend() {
     const x = 12;
     const y = 12;
+    const label = t('map.bandLegend');
     ctx.save();
     ctx.fillStyle = BAND_FILL;
     ctx.fillRect(x, y, 13, 13);
@@ -187,9 +190,9 @@ export function createMapPicker({
     ctx.textBaseline = 'top';
     ctx.lineWidth = 3;
     ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-    ctx.strokeText('Franja de totalidad', x + 19, y + 1);
+    ctx.strokeText(label, x + 19, y + 1);
     ctx.fillStyle = '#fff';
-    ctx.fillText('Franja de totalidad', x + 19, y + 1);
+    ctx.fillText(label, x + 19, y + 1);
     ctx.restore();
   }
 
@@ -477,7 +480,7 @@ export function createMapPicker({
 
     clearResults();
     searchButton.disabled = true;
-    statusEl.textContent = 'Buscando…';
+    statusEl.textContent = t('map.searching');
     let results = [];
     let failed = false;
     try {
@@ -487,10 +490,10 @@ export function createMapPicker({
     }
     searchButton.disabled = false;
     if (failed) {
-      statusEl.textContent = 'No se pudo buscar (sin conexión con el buscador de nombres).';
+      statusEl.textContent = t('map.searchFailed');
       return;
     }
-    statusEl.textContent = results.length ? '' : `Sin resultados para «${query}».`;
+    statusEl.textContent = results.length ? '' : t('map.searchNoResults', { query });
     renderResults(results);
   }
 
@@ -521,5 +524,8 @@ export function createMapPicker({
       sunAzimuthDeg = azimuthDeg;
       scheduleDraw();
     },
+    // Repaint with nothing else changed. Needed on a language change, because
+    // the band legend is canvas text rather than DOM.
+    refresh: scheduleDraw,
   };
 }

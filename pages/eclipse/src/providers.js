@@ -93,8 +93,8 @@ export function makeTileImageSource(source) {
 
 // Place-name search. Called once per explicit search and never per keystroke,
 // which is what the Nominatim usage policy asks for.
-export async function geocode(query, view) {
-  const resp = await fetch(geocodeUrl(query, view));
+export async function geocode(query, view, lang) {
+  const resp = await fetch(geocodeUrl(query, view, lang));
   if (!resp.ok) return [];
   return parseGeocode(await resp.json());
 }
