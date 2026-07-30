@@ -84,8 +84,19 @@ test('renders each totality headline in both languages', () => {
       assert.match(out, /<strong class="(good|bad)">/, `${code}['${key}'] lost its colour`);
     }
   }
-  // The unit is set off by a thin space, as it was before the strings moved here.
-  assert.match(translate('ca', 'verdict.totalVisible', { seconds: 92 }), /92 s/);
+});
+
+// A duration and its unit are held together by a thin space, so a line can never
+// wrap between "92" and "s". One message used a plain space; keeping all of them
+// honest is easier than remembering which.
+test('every duration is separated from its unit by a thin space', () => {
+  for (const { code } of LANGS) {
+    for (const [key, message] of Object.entries(messagesFor(code))) {
+      if (!message.includes('{seconds}')) continue;
+      assert.match(message, /\{seconds\} s/,
+        `${code}['${key}'] does not put a thin space before the unit`);
+    }
+  }
 });
 
 test('an untranslated key falls back to Spanish rather than to nothing', () => {
